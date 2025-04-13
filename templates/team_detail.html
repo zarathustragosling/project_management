@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Команда: {{ team.name }}{% endblock %}
+
+{% block content %}
+
+<div class="team-info flex items-center gap-4 mb-6">
+    {% if team.avatar_url %}
+        <img src="{{ team.avatar_url }}" alt="Аватар команды" class="rounded-full w-20 h-20 object-cover border border-gray-400">
+    {% endif %}
+    <div>
+        <h1 class="text-3xl font-bold">{{ team.name }}</h1>
+        {% if team.description %}
+        <p class="text-gray-300 mt-1">{{ team.description }}</p>
+        {% endif %}
+    </div>
+</div>
+
+
+<div class="container">
+  <h1>Команда: {{ team.name }}</h1>
+  <form method="POST" action="{{ url_for('leave_team') }}">
+    <button class="btn btn-danger">Выйти из команды</button>
+  </form>
+  <h2>Участники</h2>
+  <ul class="project-list">
+    {% for user in team.users %}
+      <li>
+        {{ user.username }} — {{ user.email }}
+        <a href="{{ url_for('remove_member', team_id=team.id, user_id=user.id) }}" class="delete-btn">Удалить</a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h2>Добавить участника</h2>
+  <form action="{{ url_for('add_member', team_id=team.id) }}" method="POST">
+    <select name="user_id" class="form-group">
+      {% for user in all_users %}
+        {% if user.team_id != team.id %}
+          <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+    <button class="btn">Добавить</button>
+
+
+    
+
+  </form>
+</div>
+{% endblock %}

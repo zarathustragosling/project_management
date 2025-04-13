@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Выбрать команду{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Выберите команду</h1>
+    <form method="POST" action="{{ url_for('select_team') }}">
+        <label for="team_id">Команда:</label>
+        <select id="team_id" name="team_id" required>
+            <option value="">-- Выберите команду --</option>
+            {% for team in teams %}
+            <option value="{{ team.id }}">{{ team.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn">Выбрать команду</button>
+    </form>
+    <a href="{{ url_for('create_team') }}" class="btn">Создать новую команду</a>
+</div>
+{% endblock %}

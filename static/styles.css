@@ -1,0 +1,234 @@
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: #121212;
+    color: #fff;
+    line-height: 1.6;
+}
+
+/* Navbar */
+.navbar {
+    width: 100%;
+    background-color: #1f1f1f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 24px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+
+.navbar a {
+    color: #ffffff;
+    text-decoration: none;
+    margin: 0 20px;
+    font-weight: 500;
+    font-size: 17px;
+    transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+    color: #4dabf7;
+}
+
+/* Containers */
+.container, .task-form, .project-form {
+    max-width: 1200px;
+    margin: 100px auto 40px;
+    padding: 30px;
+    background: #1f1f1f;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+/* Buttons */
+.btn, .btn-primary {
+    display: inline-block;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background-color: #4dabf7;
+    color: #fff;
+    transition: background 0.3s ease;
+    text-decoration: none;
+}
+
+.btn:hover, .btn-primary:hover {
+    background-color: #339af0;
+}
+
+.btn-danger {
+    background-color: #e03131;
+}
+
+.btn-danger:hover {
+    background-color: #c92a2a;
+}
+
+/* Forms */
+input, textarea, select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #2a2a2a;
+    color: #fff;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    transition: border-color 0.3s;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #4dabf7;
+    outline: none;
+}
+
+label {
+    font-weight: 600;
+    color: #ccc;
+}
+
+/* Kanban Board */
+.kanban-board {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+
+.kanban-column {
+    flex: 1 1 300px;
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 10px;
+    min-height: 400px;
+    transition: background 0.3s;
+}
+
+.kanban-column h2 {
+    margin-bottom: 15px;
+    font-size: 22px;
+    color: #fff;
+    text-align: center;
+}
+
+.task-card {
+    background-color: #1f1f1f;
+    padding: 16px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 2px solid transparent;
+    cursor: grab;
+}
+
+.task-card:active {
+    cursor: grabbing;
+    opacity: 0.7;
+}
+
+.task-card.dragging {
+    transform: rotate(3deg) scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+.drop-animate {
+    animation: dropFade 0.3s ease-in-out;
+}
+
+@keyframes dropFade {
+    from {
+        transform: scale(0.95);
+        opacity: 0.5;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.high-priority { border-left: 4px solid #e03131; }
+.medium-priority { border-left: 4px solid #f59f00; }
+.low-priority { border-left: 4px solid #51cf66; }
+
+/* Drop visual feedback */
+.kanban-column.dragover {
+    background-color: #343434;
+    border: 2px dashed #4dabf7;
+}
+
+/* Link styling */
+a {
+    color: #4dabf7;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #339af0;
+}
+
+a:active {
+    color: #1c7ed6;
+}
+
+/* Auth box */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px;
+}
+
+.auth-box {
+    background: #2c2c2c;
+    padding: 30px;
+    border-radius: 10px;
+    width: 360px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+/* Project list */
+.project-list {
+    list-style: none;
+    padding: 0;
+}
+
+.project-list li {
+    background: #3a3a3a;
+    padding: 15px 20px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+}
+
+.delete-btn {
+    color: #e03131;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.delete-btn:hover {
+    text-decoration: underline;
+}

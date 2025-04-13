@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ project.name }}</h1>
+    <p>{{ project.description | default("Описание отсутствует", true) }}</p>
+
+    <h2>Задачи проекта:</h2>
+    <ul>
+        {% for task in project.tasks %}
+        <li>
+            <a href="{{ url_for('task_detail', task_id=task.id) }}">{{ task.title }}</a> ({{ task.status }})
+        </li>
+        {% else %}
+        <li>Задачи пока отсутствуют.</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Отчеты проекта:</h2>
+    <ul>
+        {% for report in project.reports %}
+        <li>
+            <a href="{{ url_for('view_report', report_id=report.id) }}">{{ report.filename }}</a>
+        </li>
+        {% else %}
+        <li>Отчеты пока отсутствуют.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('reports') }}" class="btn">Добавить отчет</a>
+</div>
+{% endblock %}

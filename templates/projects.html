@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Проекты{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Список проектов</h1>
+    
+
+    <form action="{{ url_for('project_list') }}" method="POST">
+
+        <input type="text" name="name" placeholder="Название проекта" required>
+        <textarea name="description" placeholder="Описание проекта"></textarea>
+        <button type="submit">Добавить проект</button>
+    </form>
+
+
+    <ul class="project-list">
+        {% for project in projects %}
+        <li>
+            <h3><a href="{{ url_for('project_detail', project_id=project.id) }}">{{ project.name }}</h3>
+            <p>{{ project.description }}</p>
+            <a href="{{ url_for('delete_project', project_id=project.id) }}" class="delete-btn">Удалить</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+

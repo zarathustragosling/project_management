@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Привет, {{ user.username }}!</h1>
+    <p>Ваша команда: {{ team.name if team else "Не состоит в команде" }}</p>
+    
+    <h2>Навигация</h2>
+    <ul>
+        <li><a href="{{ url_for('project_list') }}">📂 Проекты</a></li>
+        <li><a href="{{ url_for('kanban') }}">📌 Kanban-доска</a></li>
+        <li><a href="{{ url_for('reports') }}">📄 Отчёты</a></li>
+        <li><a href="{{ url_for('users') }}">👥 Список пользователей</a></li>
+        <li><a href="{{ url_for('logout') }}">🚪 Выйти</a></li>
+    </ul>
+</div>
+{% endblock %}

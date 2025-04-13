@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Создание отчета{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Создание отчета</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <label for="project_id">Выберите проект:</label>
+        <select id="project_id" name="project_id" required>
+            <option value="">-- Выберите проект --</option>
+            {% for project in projects %}
+            <option value="{{ project.id }}">{{ project.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="report_file">Прикрепите отчет:</label>
+        <input type="file" id="report_file" name="report_file" required>
+
+        <button type="submit" class="btn">Загрузить отчет</button>
+    </form>
+</div>
+{% endblock %}

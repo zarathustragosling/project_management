@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if not current_user.is_authenticated %}
+        <!-- Приветствие для неавторизованных пользователей -->
+        <div class="auth-container">
+            <div class="auth-box">
+                <h2>Добро пожаловать в систему управления проектами!</h2>
+                <p>Пожалуйста, <a href="{{ url_for('login') }}">войдите</a> или <a href="{{ url_for('register') }}">зарегистрируйтесь</a>, чтобы начать работу.</p>
+            </div>
+        </div>
+    {% else %}
+        <!-- Контент для авторизованных пользователей -->
+        <h1>Привет, {{ current_user.username }}!</h1>
+        <p>Ваша команда: {{ current_user.team.name if current_user.team else "Не состоит в команде" }}</p>
+
+        <h2>Проекты</h2>
+        <a href="{{ url_for('create_project') }}" class="btn">+ Создать проект</a>
+
+        <!-- Список проектов -->
+        <ul class="project-list">
+            {% for project in projects %}
+            <li>
+                <h3><a href="{{ url_for('project_detail', project_id=project.id) }}">{{ project.name }}</a></h3>
+                <p>{{ project.description | default("Описание отсутствует", true) }}</p>
+                <a href="{{ url_for('delete_project', project_id=project.id) }}" class="delete-btn">Удалить</a>
+            </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endblock %}

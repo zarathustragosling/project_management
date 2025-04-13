@@ -1,0 +1,876 @@
+детальная карточка задачи - http://127.0.0.1:5000/task/1 
+
+InvalidRequestError
+sqlalchemy.exc.InvalidRequestError: 'Comment.replies' does not support object population - eager loading cannot be applied.
+
+Traceback (most recent call last)
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\flask\app.py", line 1536, in __call__
+return self.wsgi_app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+response = self.handle_exception(e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+response = self.full_dispatch_request()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+rv = self.handle_user_exception(e)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+rv = self.dispatch_request()
+     ^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+return current_app.ensure_sync(func)(*args, **kwargs)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\server\app.py", line 230, in task_detail
+).get_or_404(task_id)
+  ^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\flask_sqlalchemy\query.py", line 30, in get_or_404
+rv = self.get(ident)
+     ^^^^^^^^^^^^^^^
+File "<string>", line 2, in get
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\util\deprecations.py", line 386, in warned
+return fn(*args, **kwargs)  # type: ignore[no-any-return]
+       ^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 1126, in get
+return self._get_impl(ident, loading.load_on_pk_identity)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 1135, in _get_impl
+return self.session._get_impl(
+       
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 3874, in _get_impl
+return db_load_fn(
+       
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 694, in load_on_pk_identity
+session.execute(
+^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+return self._execute_internal(
+       
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+result: Result[Any] = compile_state_cls.orm_execute_statement(
+                      
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 309, in orm_execute_statement
+return cls.orm_setup_cursor_result(
+       
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 616, in orm_setup_cursor_result
+return loading.instances(result, querycontext)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 132, in instances
+with util.safe_reraise():
+^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+raise exc_value.with_traceback(exc_tb)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 114, in instances
+query_entity.row_processor(context, cursor)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 2788, in row_processor
+_instance = loading._instance_processor(
+            
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 958, in _instance_processor
+prop.create_row_processor(
+^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\interfaces.py", line 1093, in create_row_processor
+strat.create_row_processor(
+^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\strategies.py", line 2828, in create_row_processor
+_instance = loading._instance_processor(
+            
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 958, in _instance_processor
+prop.create_row_processor(
+^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\interfaces.py", line 1093, in create_row_processor
+strat.create_row_processor(
+^
+File "C:\Users\lebed\OneDrive\Рабочий стол\site\project_management\venv\Lib\site-packages\sqlalchemy\orm\strategies.py", line 2811, in create_row_processor
+raise sa_exc.InvalidRequestError(
+^Open an interactive python shell in this frame
+sqlalchemy.exc.InvalidRequestError: 'Comment.replies' does not support object population - eager loading cannot be applied.
+
+модели:
+import enum 
+from sqlalchemy import Enum as PgEnum
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+
+db = SQLAlchemy()
+
+class Team(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    users = db.relationship('User', backref='team', lazy=True)
+    projects = db.relationship('Project', back_populates='team', lazy=True)  # Use back_populates
+    avatar_url = db.Column(db.String(300), nullable=True)  # URL к изображению
+    description = db.Column(db.Text, nullable=True)        # Описание
+
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password_hash = db.Column(db.String(200), nullable=False)
+    team_id = db.Column(db.Integer, db.ForeignKey('team.id'), nullable=True)
+    avatar = db.Column(db.String(200), nullable=True)
+
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class Project(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    
+    tasks = db.relationship('Task', back_populates='project', lazy=True)  # Use back_populates
+    reports = db.relationship('Report', back_populates='project', lazy=True)  # Use back_populates
+
+    team_id = db.Column(db.Integer, db.ForeignKey('team.id'), nullable=True)  # Corrected indentation
+
+    # Отношение к команде
+    team = db.relationship('Team', back_populates='projects')  # Matches back_populates in Team
+
+class TaskStatus(enum.Enum):
+    TO_DO = "To Do"
+    IN_PROGRESS = "In Progress"
+    DONE = "Done"
+
+
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    priority = db.Column(db.String(20), nullable=False, default='Средний')
+    status = db.Column(PgEnum(TaskStatus, name='taskstatus'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    deadline = db.Column(db.Date)
+    comments = db.relationship('Comment', back_populates='task', lazy='joined')
+    project = db.relationship('Project', back_populates='tasks')  # Matches back_populates in Project
+    assigned_user = db.relationship('User', foreign_keys=[assigned_to], backref='assigned_tasks')
+    creator = db.relationship('User', foreign_keys=[created_by], backref='created_tasks')
+
+class Report(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(200), nullable=False)  # Имя файла
+    filepath = db.Column(db.String(200), nullable=False)  # Путь к файлу
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    project = db.relationship('Project', back_populates='reports')  # Matches back_populates in Project
+
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    task = db.relationship('Task', back_populates='comments')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'), nullable=True)
+    
+    
+    author = db.relationship('User', backref='comments')
+    replies = db.relationship('Comment', 
+                            backref=db.backref('parent', remote_side=[id]), 
+                            lazy='dynamic')
+    attachments = db.relationship('CommentAttachment', 
+                                backref='comment', 
+                                lazy=True)
+
+    
+class CommentAttachment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(200), nullable=False)
+    filepath = db.Column(db.String(300), nullable=False)
+    comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'), nullable=False)
+
+сервер 
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from database import db, User, Project, Task, Report, Team, TaskStatus, Comment
+import os, random, string
+from werkzeug.utils import secure_filename
+from datetime import datetime
+
+
+# Инициализация приложения
+app = Flask(__name__, template_folder="../templates", static_folder="../static")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../project_management.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'supersecretkey'
+
+# Настройка папки для загрузки файлов
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+AVATAR_FOLDER = os.path.join(app.static_folder, 'avatars')
+if not os.path.exists(AVATAR_FOLDER):
+    os.makedirs(AVATAR_FOLDER)
+
+
+# Создание папки для загрузки файлов, если она не существует
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+# Проверка допустимых расширений файлов
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/create_team', methods=['GET', 'POST'])
+@login_required
+def create_team():
+    if request.method == 'POST':
+        name = request.form['name']
+        new_team = Team(name=name)
+        db.session.add(new_team)
+        db.session.commit()
+        flash('Команда успешно создана!', 'success')
+        return redirect(url_for('select_team'))
+    return render_template('create_team.html')
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    if request.method == 'POST':
+        file = request.files.get('avatar')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(AVATAR_FOLDER, filename)
+            file.save(filepath)
+            current_user.avatar = f"avatars/{filename}"
+            db.session.commit()
+            flash("Аватар обновлён!", "success")
+    return render_template('profile.html', user=current_user)
+
+
+
+# Маршрут для выбора команды
+@app.route('/select_team', methods=['GET', 'POST'])
+@login_required
+def select_team():
+    if request.method == 'POST':
+        team_id = request.form['team_id']
+        current_user.team_id = team_id
+        db.session.commit()
+        flash('Команда успешно выбрана!', 'success')
+        return redirect(url_for('home'))
+    teams = Team.query.all()
+    return render_template('select_team.html', teams=teams)
+
+
+@app.route('/task/<int:task_id>/update', methods=['PATCH'])
+@login_required
+def update_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    if task.created_by != current_user.id:
+        return jsonify({'success': False, 'error': 'Нет прав'}), 403
+
+    data = request.get_json()
+
+    try:
+        task.title = data.get('title', task.title)
+        task.description = data.get('description', task.description)
+        task.priority = data.get('priority', task.priority)
+        task.status = TaskStatus(data.get('status', task.status.name))
+
+        project_id = data.get('project_id')
+        if project_id:
+            task.project_id = int(project_id)
+
+        assigned_to = data.get('assigned_to')
+        task.assigned_to = int(assigned_to) if assigned_to else None
+
+        deadline = data.get('deadline')
+        if deadline:
+            task.deadline = datetime.fromisoformat(deadline)
+
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+
+
+
+@app.route('/update_task_status/<int:task_id>', methods=['POST'])
+@login_required
+def update_task_status(task_id):
+    task = Task.query.get_or_404(task_id)
+    data = request.get_json()
+
+    new_status = data.get('status', '').strip().upper().replace(" ", "_")
+    try:
+        task.status = TaskStatus[new_status]
+        db.session.commit()
+        return jsonify({'success': True, 'new_status': task.status.value})
+    except KeyError:
+        return jsonify({'success': False, 'error': f'Invalid status: {new_status}'}), 400
+
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        team_id = request.form.get('team_id')
+
+        if not username or not email or not password:
+            flash("Все поля обязательны!", "danger")
+            return redirect(url_for('register'))
+
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash("Пользователь с таким email уже зарегистрирован!", "warning")
+            return redirect(url_for('register'))
+
+        new_user = User(username=username, email=email, team_id=team_id)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Регистрация успешна! Войдите в систему.", "success")
+        return redirect(url_for('login'))
+
+    teams = Team.query.all()
+    return render_template('register.html', teams=teams)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        else:
+            flash("Ошибка входа! Проверьте данные.", "danger")
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("Вы вышли из системы.", "info")
+    return redirect(url_for('login'))
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html', user=current_user, team=current_user.team)
+
+
+
+@app.route('/users', methods=['GET', 'POST'])
+@login_required
+def users():
+    if request.method == 'POST':
+        # Генерация уникального имени и email
+        username = f"test_user_{''.join(random.choices(string.ascii_lowercase + string.digits, k=5))}"
+        email = f"{username}@example.com"
+
+        # Проверка, что сгенерированные имя и email уникальны
+        while User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first():
+            username = f"test_user_{''.join(random.choices(string.ascii_lowercase + string.digits, k=5))}"
+            email = f"{username}@example.com"
+
+        # Создание нового пользователя
+        new_user = User(username=username, email=email)
+        new_user.set_password("test123")  # Установка пароля
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash(f"Тестовый пользователь {username} создан!", "success")
+
+    users = User.query.all()
+    return render_template('users.html', users=users)
+
+
+@app.route('/task/<int:task_id>')
+@login_required
+def task_detail(task_id):
+    task = Task.query.options(
+        db.joinedload(Task.comments)
+          .joinedload(Comment.author),
+        db.joinedload(Task.comments)
+          .joinedload(Comment.attachments),
+        db.joinedload(Task.comments)
+          .joinedload(Comment.replies)
+    ).get_or_404(task_id)
+    
+    return render_template(
+        'task_detail.html',
+        task=task,
+        projects=Project.query.all(),
+        users=User.query.all()
+    )
+
+@app.route('/reports', methods=['GET', 'POST'])
+@login_required
+def reports():
+    if request.method == 'POST':
+        project_id = request.form['project_id']
+        file = request.files['report_file']
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+
+            new_report = Report(filename=filename, filepath=filepath, project_id=project_id)
+            db.session.add(new_report)
+            db.session.commit()
+
+            flash('Отчет успешно загружен!', 'success')
+        else:
+            flash('Недопустимый формат файла!', 'danger')
+
+    projects = Project.query.all()
+    return render_template('reports.html', projects=projects)
+
+@app.route('/report/<int:report_id>')
+@login_required
+def view_report(report_id):
+    report = Report.query.get_or_404(report_id)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], report.filename)
+
+@app.route('/charts')
+@login_required
+def charts():
+    return render_template('charts.html')
+
+
+@app.route('/')
+def home():
+    if current_user.is_authenticated:
+        projects = Project.query.all()  
+        return render_template('index.html', projects=projects)
+    else:
+        return render_template('index.html')
+
+@app.route('/edit_team', methods=['GET', 'POST'])
+@login_required
+def edit_team():
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        avatar_url = request.form.get('avatar_url', '').strip()
+        description = request.form.get('description', '').strip()
+        
+        if action == 'join':
+            team_id = request.form.get('team_id')
+            team = Team.query.get(int(team_id))
+            if team:
+                current_user.team_id = team.id
+                db.session.commit()
+                flash("Вы присоединились к команде.", "success")
+                return redirect(url_for('team_detail', team_id=team.id))
+            flash("Команда не найдена.", "danger")
+
+        elif action == 'create':
+            # Исправлено получение и проверка имени команды
+            name = request.form.get('new_team', '').strip()  # Используем get с default значением
+            
+            if not name:
+                flash("Введите название команды.", "danger")
+            elif Team.query.filter_by(name=name).first():
+                flash("Команда с таким названием уже существует.", "danger")
+            else:
+                new_team = Team(name=name, avatar_url=avatar_url or None, description=description or None)
+                db.session.add(new_team)
+                db.session.commit()
+                current_user.team_id = new_team.id
+                db.session.commit()
+                flash("Команда создана и вы присоединились к ней.", "success")
+                return redirect(url_for('team_detail', team_id=new_team.id))
+
+    teams = Team.query.all()
+    return render_template('edit_team.html', teams=teams)
+
+
+        
+@app.route('/kanban')
+@login_required
+def kanban():
+    if not current_user.team_id:
+        return redirect(url_for('edit_team'))
+
+    tasks = Task.query \
+        .join(Project) \
+        .filter(Project.team_id == current_user.team_id) \
+        .options(
+            db.joinedload(Task.assigned_user),
+            db.joinedload(Task.creator),
+            db.joinedload(Task.project)
+        ).all()
+
+    return render_template('kanban.html', tasks=tasks)
+
+
+@app.route('/leave_team', methods=['POST'])
+@login_required
+def leave_team():
+    current_user.team_id = None
+    db.session.commit()
+    flash("Вы покинули команду.", "info")
+    return redirect(url_for('dashboard'))  # или куда хочешь
+
+
+
+@app.route('/debug')
+def debug():
+    tasks = Task.query.all()
+    return '<br>'.join(f"{t.id} | {t.title} | {t.status}" for t in tasks)
+
+
+@app.route('/task_creator', methods=['GET', 'POST'])
+@login_required
+def task_creator():
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        description = request.form.get('description', '').strip()
+        priority = request.form.get('priority')
+        status = TaskStatus.TO_DO
+        project_id = request.form.get('project_id')
+        deadline = request.form.get('deadline')
+        assigned_to = request.form.get('assigned_to')
+        created_by = request.form.get('created_by', current_user.id)
+
+        if not title or not priority or not project_id:
+            flash("Заполните обязательные поля", "danger")
+            return redirect(url_for('task_creator'))
+
+        new_task = Task(
+            title=title,
+            description=description if description else None,
+            priority=priority,
+            status=status,
+            project_id=int(project_id),
+            assigned_to=int(assigned_to) if assigned_to else None,
+            created_by=int(created_by),
+            deadline=datetime.strptime(deadline, '%Y-%m-%d') if deadline else None
+        )
+
+        db.session.add(new_task)
+        db.session.commit()
+        flash("Задача создана!", "success")
+        return redirect(url_for('kanban'))
+
+    # ДЛЯ GET-запроса
+    projects = Project.query.all()
+    users = User.query.filter_by(team_id=current_user.team_id).all()
+    return render_template('task_creator.html', projects=projects, users=users)
+
+
+
+@app.route('/edit_task/<int:task_id>', methods=['GET', 'POST'])
+@login_required
+def edit_task(task_id):
+    task = Task.query.get_or_404(task_id)
+
+    if request.method == 'POST':
+        task.title = request.form.get('title', '').strip()
+        task.description = request.form.get('description', None)
+        task.priority = request.form.get('priority', 'Средний')
+        task.status = TaskStatus(request.form.get('status'))
+        task.project_id = int(request.form.get('project_id'))
+        task.assigned_to = int(request.form.get('assigned_to')) if request.form.get('assigned_to') else None
+        deadline = request.form.get('deadline')
+        task.deadline = datetime.strptime(deadline, '%Y-%m-%d') if deadline else None
+
+        db.session.commit()
+        flash("Задача успешно обновлена!", "success")
+        return redirect(url_for('kanban'))
+
+    projects = Project.query.filter_by(team_id=current_user.team_id).all()
+    users = User.query.filter_by(team_id=current_user.team_id).all()
+
+    return render_template('task_creator.html', task=task, projects=projects, users=users, is_edit=True)
+
+
+
+@app.route('/delete_task/<int:task_id>')
+def delete_task(task_id):
+    task = Task.query.get(task_id)
+    db.session.delete(task)
+    db.session.commit()
+    return redirect(url_for('kanban'))
+    
+
+@app.route('/task/<int:task_id>/comment', methods=['POST'])
+@login_required
+def add_comment(task_id):
+    task = Task.query.get_or_404(task_id)
+    if current_user.team_id != task.project.team_id:
+        flash("Вы не можете комментировать задачи другой команды.", "danger")
+        return redirect(url_for('task_detail', task_id=task_id))
+
+    content = request.form.get('content', '').strip()
+    if content:
+        comment = Comment(content=content, user_id=current_user.id, task_id=task_id)
+        db.session.add(comment)
+        db.session.commit()
+        flash("Комментарий добавлен!", "success")
+    return redirect(url_for('task_detail', task_id=task_id))
+
+
+@app.route('/projects', methods=['GET', 'POST'])
+@login_required
+def project_list():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        team_id = current_user.team_id
+
+        if not name or not team_id:
+            flash("Название и команда обязательны.", "danger")
+            return redirect(url_for('project_list'))
+
+        new_project = Project(name=name, description=description, team_id=team_id)
+        db.session.add(new_project)
+        db.session.commit()
+
+        flash("Проект создан!", "success")
+        return redirect(url_for('project_list'))
+
+    # Показываем только проекты текущей команды
+    projects = Project.query.filter_by(team_id=current_user.team_id).all()
+    return render_template('projects.html', projects=projects)
+
+
+    
+    
+@app.route('/project/<int:project_id>')
+@login_required
+def project_detail(project_id):
+    project = Project.query.get_or_404(project_id)
+    return render_template('project_detail.html', project=project)
+
+@app.route('/delete_project/<int:project_id>')
+@login_required
+def delete_project(project_id):
+    project = Project.query.get_or_404(project_id)
+
+    # Удаляем все задачи, связанные с проектом
+    Task.query.filter_by(project_id=project.id).delete()
+
+    # Удаляем все отчеты, связанные с проектом
+    Report.query.filter_by(project_id=project.id).delete()
+
+    # Удаляем сам проект
+    db.session.delete(project)
+    db.session.commit()
+
+    flash("Проект и все связанные задачи и отчеты успешно удалены!", "success")
+    return redirect(url_for('home'))
+
+
+
+@app.route('/create_project', methods=['GET', 'POST'])
+@login_required
+def create_project():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        description = request.form.get('description', '').strip()
+        team_id = request.form.get('team_id')
+
+        if not name or not team_id:
+            flash("Название проекта и команда обязательны", "danger")
+            return redirect(url_for('create_project'))
+
+        new_project = Project(
+            name=name,
+            description=description if description else None,
+            team_id=int(team_id)
+        )
+
+        db.session.add(new_project)
+        db.session.commit()
+        flash("Проект создан!", "success")
+        return redirect(url_for('projects'))
+
+    teams = Team.query.all()
+    return render_template('create_project.html', teams=teams)
+
+
+
+@app.route('/team/<int:team_id>')
+@login_required
+def team_detail(team_id):
+    team = Team.query.get_or_404(team_id)
+    all_users = User.query.all()
+    return render_template('team_detail.html', team=team, all_users=all_users)
+
+@app.route('/team/<int:team_id>/add_member', methods=['POST'])
+@login_required
+def add_member(team_id):
+    user_id = request.form.get('user_id')
+    user = User.query.get(user_id)
+    if user:
+        user.team_id = team_id
+        db.session.commit()
+    return redirect(url_for('team_detail', team_id=team_id))
+
+@app.route('/team/<int:team_id>/remove_member/<int:user_id>')
+@login_required
+def remove_member(team_id, user_id):
+    user = User.query.get(user_id)
+    if user and user.team_id == team_id:
+        user.team_id = None
+        db.session.commit()
+    return redirect(url_for('team_detail', team_id=team_id))
+
+
+
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
+
+
+страница
+{% extends 'base.html' %}
+{% block title %}Задача: {{ task.title }}{% endblock %}
+
+{% block content %}
+<div class="container space-y-6">
+    <div class="space-y-2">
+        <h1 class="text-3xl font-bold">{{ task.title }}</h1>
+        <p class="text-gray-400">{{ task.description or "Нет описания" }}</p>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            <p><strong>Проект:</strong> <a href="{{ url_for('project_detail', project_id=task.project.id) }}" class="text-blue-400 hover:underline">{{ task.project.name }}</a></p>
+            <p><strong>Приоритет:</strong> {{ task.priority }}</p>
+            <p><strong>Статус:</strong> {{ task.status.value }}</p>
+            <p><strong>Создано:</strong> {{ task.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+            <p><strong>Дедлайн:</strong> {{ task.deadline.strftime('%d.%m.%Y') if task.deadline else "Не установлен" }}</p>
+            <p><strong>Ответственный:</strong> {{ task.assigned_user.username if task.assigned_user else "Не назначен" }}</p>
+            <p><strong>Постановщик:</strong> {{ task.creator.username }}</p>
+        </div>
+
+        {% if current_user.id == task.created_by %}
+        <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn mt-4">✏️ Редактировать</a>
+        {% endif %}
+    </div>
+
+    <hr class="my-6">
+    <h2 class="text-xl font-semibold mb-3">Комментарии</h2>
+
+    <!-- Удалите часть с include и закомментированный код -->
+<!-- В цикле комментариев исправьте avatar_url на avatar -->
+{% for comment in task.comments %}
+<div class="flex items-start gap-4 mb-4">
+    <img src="{{ comment.author.avatar or url_for('static', filename='default_avatar.png') }}" 
+         class="w-10 h-10 rounded-full object-cover" alt="avatar">
+    
+    <div class="bg-gray-800 p-4 rounded-lg w-full">
+        <p class="text-sm text-white">
+            <strong>{{ comment.author.username }}</strong>
+            <span class="text-xs text-gray-400 ml-2">
+                {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}
+            </span>
+        </p>
+        <p class="text-white mt-1">{{ comment.content }}</p>
+        
+        <!-- Исправлено для вложений -->
+        {% if comment.attachments %}
+        <div class="mt-2">
+            {% for attachment in comment.attachments %}
+            <a href="{{ url_for('static', filename=attachment.filepath) }}" 
+               class="text-blue-400 hover:underline text-sm block">
+                📁 {{ attachment.filename }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<p class="text-gray-500">Комментариев пока нет.</p>
+{% endfor %}
+
+<h3 class="text-lg font-medium mt-8">Добавить комментарий</h3>
+<form action="{{ url_for('add_comment', task_id=task.id) }}" method="POST" enctype="multipart/form-data" class="space-y-4 mt-4">
+    <textarea name="content" rows="3" required class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600" placeholder="Ваш комментарий..."></textarea>
+    <input type="file" name="attachment" multiple class="block text-white" />
+    <button type="submit" class="btn">Отправить</button>
+</form>
+
+<!-- partial: _comment_card.html -->
+<div class="bg-gray-800 p-4 rounded-lg shadow relative">
+    <div class="flex items-start gap-4">
+        <img src="{{ comment.author.avatar_url or url_for('static', filename='default_avatar.png') }}" class="w-10 h-10 rounded-full object-cover" alt="avatar">
+        <div class="flex-1">
+            <div class="text-sm text-gray-300 font-semibold">{{ comment.author.username }}
+                <span class="text-xs text-gray-400">{{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+            <p class="text-sm mt-1 text-white">{{ comment.content }}</p>
+
+            {% if comment.attachments %}
+            <ul class="mt-2 space-y-1 text-sm text-blue-400">
+                {% for attachment in comment.attachments %}
+                    <li>
+                        <a href="{{ url_for('static', filename=attachment.filepath) }}" target="_blank" class="hover:underline">
+                            📁 {{ attachment.filename }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <button class="text-xs text-blue-400 mt-2 reply-btn">Ответить</button>
+
+            <form action="{{ url_for('add_comment', task_id=task.id) }}" method="POST" class="hidden mt-2 reply-form" enctype="multipart/form-data">
+                <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                <textarea name="content" rows="2" required class="w-full p-1 rounded bg-gray-700 text-white border border-gray-600 text-sm"></textarea>
+                <input type="file" name="attachment" class="text-sm mt-1 text-white"/>
+                <button type="submit" class="btn mt-1">Отправить</button>
+            </form>
+        </div>
+    </div>
+
+    {% if comment.replies %}
+        <div class="mt-4 ml-10 space-y-3">
+            {% for reply in comment.replies %}
+                {% set comment = reply %}
+                {% include '_comment_card.html' %}
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+
+

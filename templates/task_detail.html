@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Задача: {{ task.title }}{% endblock %}
+
+{% block content %}
+<div class="container space-y-6">
+  <div class="space-y-2">
+    <h1 class="text-3xl font-bold">{{ task.title }}</h1>
+    <p class="text-gray-400">{{ task.description or "Нет описания" }}</p>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+      <p><strong>Проект:</strong> <a href="{{ url_for('project_detail', project_id=task.project.id) }}" class="text-blue-400 hover:underline">{{ task.project.name }}</a></p>
+      <p><strong>Приоритет:</strong> {{ task.priority }}</p>
+      <p><strong>Статус:</strong> {{ task.status.value }}</p>
+      <p><strong>Создано:</strong> {{ task.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+      <p><strong>Дедлайн:</strong> {{ task.deadline.strftime('%d.%m.%Y') if task.deadline else "Не установлен" }}</p>
+      <p><strong>Ответственный:</strong> {{ task.assigned_user.username if task.assigned_user else "Не назначен" }}</p>
+      <p><strong>Постановщик:</strong> {{ task.creator.username }}</p>
+    </div>
+
+    {% if current_user.id == task.created_by %}
+    <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn mt-4">✏️ Редактировать</a>
+    {% endif %}
+  </div>
+
+  <hr class="my-6">
+  <h2 class="text-xl font-semibold mb-3">Комментарии</h2>
+
+  <div id="comments-list" class="space-y-4">
+    {% for comment in task.comments if not comment.parent_id %}
+      {% include '_comment.html' %}
+      {% for reply in comment.replies %}
+        {% include '_comment.html' with context %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+  
+
+  <h3 class="text-lg font-medium mt-8">Добавить комментарий</h3>
+  <form id="commentForm" action="{{ url_for('add_comment', task_id=task.id) }}" method="POST" enctype="multipart/form-data" class="space-y-4 mt-4">
+    <input type="hidden" name="parent_id" id="parent_id" value="">
+    <textarea id="commentContent" name="content" rows="3" required
+              class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600"
+              placeholder="Ваш комментарий..."></textarea>
+    <input type="file" name="attachment" multiple class="block text-white" />
+    <button type="submit" class="btn">Отправить</button>
+  </form>
+  
+</div>
+
+
+{% endblock %}
