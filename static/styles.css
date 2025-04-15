@@ -232,3 +232,49 @@ a:active {
 .delete-btn:hover {
     text-decoration: underline;
 }
+
+
+  img[alt="avatar"] {
+    width: 2rem;
+    height: 2rem;
+  }
+
+
+  .mention {
+    color: #60a5fa; /* text-blue-400 */
+    font-weight: 500;
+  }
+  
+
+  .comment-reply-wrapper {
+    position: relative;
+    margin-left: 2.5rem; /* отступ для ветки */
+    padding-left: 1rem;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .comment-reply-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0.75rem;
+    left: -0.625rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: #3b82f6; /* синяя точка */
+    border-radius: 9999px;
+  }
+
+  .comment-box {
+    background-color: #1f2937; /* темный фон */
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  }
+
+  .comment-avatar {
+    flex-shrink: 0;
+  }
+
+  .comment-main {
+    flex: 1;
+  }

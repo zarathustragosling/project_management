@@ -6,6 +6,7 @@
   <h1 class="text-2xl font-bold">Профиль пользователя</h1>
 
   <form action="{{ url_for('update_profile') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+
     <div>
       <label class="block text-sm mb-1">Аватар</label>
       <img src="{{ current_user.avatar or url_for('static', filename='default_avatar.png') }}" class="w-24 h-24 rounded-full mb-2 object-cover" />

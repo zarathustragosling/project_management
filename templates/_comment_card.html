@@ -1,42 +1,41 @@
-<div class="flex items-start gap-4">
-    <img src="{{ comment.author.avatar or url_for('static', filename='default_avatar.png') }}"
-         class="w-10 h-10 rounded-full object-cover" alt="avatar">
-  
-    <div class="bg-gray-800 p-4 rounded-lg w-full">
-      <p class="text-sm text-white">
-        <strong>{{ comment.author.username }}</strong>
-        <span class="text-xs text-gray-400 ml-2">
-          {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}
-        </span>
-      </p>
-      <p class="text-white mt-1">{{ comment.content }}</p>
-  
-      {% if comment.attachments %}
-      <div class="mt-2">
-        {% for attachment in comment.attachments %}
-        <a href="{{ url_for('static', filename=attachment.filepath) }}" class="text-blue-400 hover:underline text-sm block">
+<div class="flex items-start gap-3 mb-4 comment-box" data-parent-id="{{ comment.parent_id }}">
+  <img src="{{ comment.author.avatar or url_for('static', filename='default_avatar.png') }}"
+       class="w-10 h-10 rounded-full object-cover" alt="avatar">
+
+  <div class="bg-gray-800 p-4 rounded-lg w-full">
+    <div class="flex items-center gap-2 mb-1" data-comment-id="{{ comment.id }}">
+
+      <a href="{{ url_for('user_profile', user_id=comment.author.id) }}"
+         class="text-sm font-semibold text-white hover:text-blue-400 transition">
+         {{ comment.author.username }}
+      </a>
+      <span class="text-xs text-gray-400">
+        {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}
+      </span>
+    </div>
+
+    <!-- Текст комментария -->
+    <p class="text-sm text-white whitespace-pre-wrap comment-content">
+      {{ comment.content|safe }}
+    </p>
+
+    {% if comment.attachments %}
+    <div class="mt-2">
+      {% for attachment in comment.attachments %}
+        <a href="{{ url_for('static', filename=attachment.filepath) }}"
+           class="text-blue-400 hover:underline text-sm block">
           📁 {{ attachment.filename }}
         </a>
-        {% endfor %}
-      </div>
-      {% endif %}
-  
-      <button class="text-xs text-blue-400 mt-2 reply-btn">Ответить</button>
-  
-      <form action="{{ url_for('add_comment', task_id=task.id) }}" method="POST" class="hidden mt-2 reply-form" enctype="multipart/form-data">
-        <input type="hidden" name="parent_id" value="{{ comment.id }}">
-        <textarea name="content" rows="2" required class="w-full p-1 rounded bg-gray-700 text-white border border-gray-600 text-sm" placeholder="Ответ..."></textarea>
-        <input type="file" name="attachment" class="text-sm mt-1 text-white" />
-        <button type="submit" class="btn mt-1">Отправить</button>
-      </form>
-  
-      {% if comment.replies %}
-      <div class="ml-10 mt-4 space-y-4">
-        {% for comment in comment.replies %}
-          {% include '_comment.html' with context %}
-        {% endfor %}
-      </div>
-      {% endif %}
+      {% endfor %}
     </div>
+    {% endif %}
+
+    <button class="reply-btn text-xs mt-2 text-blue-400 hover:underline"
+        data-username="{{ comment.author.username }}"
+        data-userid="{{ comment.author.id }}"
+        data-commentid="{{ comment.id }}">
+  Ответить
+</button>
+
   </div>
-  
+</div>

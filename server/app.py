@@ -6,13 +6,21 @@ import os, random, string
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import re
-from markupsafe import Markup
+from markupsafe import Markup, escape
+from markdown import markdown
+
+
 
 # Инициализация приложения
 app = Flask(__name__, template_folder="../templates", static_folder="../static")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../project_management.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'supersecretkey'
+
+
+
+
+
 
 # Настройка папки для загрузки файлов
 UPLOAD_FOLDER = 'uploads'
@@ -57,9 +65,34 @@ def create_team():
     return render_template('create_team.html')
 
 
+
+
 @app.template_filter('highlight_mentions')
 def highlight_mentions(text):
-    return Markup(re.sub(r'@(\w+)', r'<span class="text-blue-400">@\1</span>', text))
+    def replace(match):
+        user_id = match.group(1)
+        username = match.group(2)
+        return f'<a href="/user/{user_id}" class="mention text-blue-400 hover:underline">@{escape(username)}</a>'
+
+    pattern = r'<@(\d+):([\wа-яА-ЯёЁ\s.-]+)>'
+    return Markup(re.sub(pattern, replace, text))
+
+
+
+
+def process_mentions(content):
+    """Заменяет @username на ссылку на профиль"""
+    pattern = r'@([\w\.-]+)'  # допускает email или username
+
+    def repl(match):
+        username = match.group(1)
+        user = User.query.filter_by(username=username).first()
+        if user:
+            return f'<a href="{url_for("user_profile", user_id=user.id)}" class="mention text-blue-400 hover:underline">@{escape(username)}</a>'
+        return escape(match.group(0))  # если не найден
+
+    return Markup(re.sub(pattern, repl, content))
+
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
@@ -73,15 +106,16 @@ def update_profile():
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            filepath = os.path.join('static/avatars', filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            current_user.avatar = f"/{filepath}"
+            current_user.avatar = f"/static/uploads/{filename}"
 
         db.session.commit()
-        flash("Профиль обновлен", "success")
+        flash("Профиль обновлен!", "success")
         return redirect(url_for('update_profile'))
 
     return render_template('profile.html')
+
 
 
 @app.route('/change_password', methods=['POST'])
@@ -220,6 +254,10 @@ def logout():
 def dashboard():
     return render_template('dashboard.html', user=current_user, team=current_user.team)
 
+@app.route("/user/<int:user_id>")
+def user_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template("profile.html", user=user)
 
 
 @app.route('/users', methods=['GET', 'POST'])
@@ -458,21 +496,70 @@ def delete_task(task_id):
     return redirect(url_for('kanban'))
     
 
+
+
+
 @app.route('/task/<int:task_id>/comment', methods=['POST'])
 @login_required
 def add_comment(task_id):
     task = Task.query.get_or_404(task_id)
     if current_user.team_id != task.project.team_id:
-        flash("Вы не можете комментировать задачи другой команды.", "danger")
-        return redirect(url_for('task_detail', task_id=task_id))
+        return jsonify(success=False, error="Нет доступа к задаче"), 403
 
-    content = request.form.get('content', '').strip()
-    if content:
-        comment = Comment(content=content, user_id=current_user.id, task_id=task_id)
+    content = request.form.get("content", "").strip()
+    parent_id = request.form.get("parent_id")
+    attachment = request.files.get("attachment")
+
+    if not content:
+        return jsonify(success=False, error="Комментарий пуст")
+
+    # Поиск упомянутого <@user_id:username> для подсветки
+    match = re.search(r"<@(\d+):(.+?)>", content)
+    if match:
+        parent_id = parent_id or match.group(1)
+
+    comment = Comment(
+        content=content,
+        user_id=current_user.id,
+        task_id=task_id,
+        parent_id=parent_id if parent_id else None
+    )
+
+    if attachment and attachment.filename:
+        filename = secure_filename(attachment.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        attachment.save(filepath)
         db.session.add(comment)
-        db.session.commit()
-        flash("Комментарий добавлен!", "success")
-    return redirect(url_for('task_detail', task_id=task_id))
+        db.session.flush()  # получить comment.id
+        comment.attachments.append(CommentAttachment(
+            filename=filename,
+            filepath=f'uploads/{filename}',
+            comment_id=comment.id
+        ))
+    else:
+        db.session.add(comment)
+
+    db.session.commit()
+
+    author = {
+        "id": current_user.id,
+        "username": current_user.username,
+        "avatar": current_user.avatar or url_for('static', filename='default_avatar.png')
+    }
+
+    return jsonify(success=True, comment={
+        "id": comment.id,
+        "content": comment.content,
+        "created_at": comment.created_at.strftime('%d.%m.%Y %H:%M'),
+        "author": author,
+        "attachment": attachment.filename if attachment else None,
+        "parent_id": comment.parent_id,
+        "parent_author": comment.parent.author.username if comment.parent else None
+    })
+
+
+
+
 
 
 @app.route('/projects', methods=['GET', 'POST'])

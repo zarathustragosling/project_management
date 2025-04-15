@@ -1,30 +1,58 @@
-<div class="flex items-start gap-4 mb-4 {% if comment.parent_id %}ml-10 border-l-2 border-gray-600 pl-4{% endif %}">
-    <img src="{{ comment.author.avatar or url_for('static', filename='default_avatar.png') }}"
-         class="w-10 h-10 rounded-full object-cover" alt="avatar">
-    <div class="bg-gray-800 p-4 rounded-lg w-full">
-      <div class="text-sm text-white">
-        <strong>{{ comment.author.username }}</strong>
-        <span class="text-xs text-gray-400 ml-2">{{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
-      </div>
-      <p class="text-white mt-1">{{ comment.content | highlight_mentions }}</p>
+<div class="flex items-start gap-3 mb-4 comment-box"
+     data-parent-id="{{ comment.parent_id }}"
+     data-is-reply="{{ 1 if comment.parent_id else 0 }}">
 
-  
-      {% if comment.attachments %}
+
+  <img src="{{ comment.author.avatar or url_for('static', filename='default_avatar.png') }}"
+       class="w-10 h-10 rounded-full object-cover" alt="avatar">
+
+  <div class="bg-gray-800 p-4 rounded-lg w-full">
+    <div class="flex items-center gap-2">
+      <a href="{{ url_for('user_profile', user_id=comment.author.id) }}"
+         class="text-sm font-bold text-white hover:underline">
+         {{ comment.author.username }}
+      </a>
+      <span class="text-xs text-gray-400">
+        {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}
+      </span>
+    </div>
+
+    <div class="mt-1 text-white text-sm">
+      {{ comment.content | highlight_mentions | safe }}
+    </div>
+
+    {% if comment.attachments %}
       <div class="mt-2">
         {% for attachment in comment.attachments %}
-          <a href="{{ url_for('static', filename=attachment.filepath) }}" class="text-blue-400 hover:underline text-sm block">
-            📁 {{ attachment.filename }}
+          <a href="{{ url_for('static', filename=attachment.filepath) }}"
+             class="text-blue-400 hover:underline text-sm block">
+            📎 {{ attachment.filename }}
           </a>
         {% endfor %}
       </div>
-      {% endif %}
-  
-      <button type="button"
-              class="text-xs text-blue-400 mt-2 reply-btn"
-              data-username="{{ comment.author.username }}"
-              data-parent-id="{{ comment.id }}">
-        Ответить
-      </button>
-    </div>
+    {% endif %}
+
+    {% if not parent %}
+  <button type="button"
+          class="reply-btn text-xs text-blue-400 mt-2"
+          data-username="{{ comment.author.username }}"
+          data-userid="{{ comment.author.id }}"
+          data-commentid="{{ comment.id }}">
+    Ответить
+  </button>
+{% endif %}
+
+
+    {% if comment.replies %}
+      <div class="ml-10 mt-4 space-y-4">
+        {% for reply in comment.replies %}
+  {% include "comment.html" with context %}
+{% set parent = true %}
+{% endfor %}
+
+      
+
+      </div>
+    {% endif %}
   </div>
-  
+</div>
