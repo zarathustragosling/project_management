@@ -30,12 +30,15 @@
     </div>
     {% endif %}
 
+    {% if comment.parent_id is none %}
     <button class="reply-btn text-xs mt-2 text-blue-400 hover:underline"
-        data-username="{{ comment.author.username }}"
-        data-userid="{{ comment.author.id }}"
-        data-commentid="{{ comment.id }}">
-  Ответить
-</button>
+            data-username="{{ comment.author.username }}"
+            data-userid="{{ comment.author.id }}"
+            data-commentid="{{ comment.id }}">
+      Ответить
+    </button>
+  {% endif %}
+  
 
   </div>
 </div>

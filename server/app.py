@@ -8,7 +8,7 @@ from datetime import datetime
 import re
 from markupsafe import Markup, escape
 from markdown import markdown
-
+from datetime import date
 
 
 # Инициализация приложения
@@ -23,9 +23,13 @@ app.config['SECRET_KEY'] = 'supersecretkey'
 
 
 # Настройка папки для загрузки файлов
-UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'}
+UPLOAD_FOLDER = os.path.join(app.static_folder, 'uploads')
+
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'jpeg', 'png'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
 
 AVATAR_FOLDER = os.path.join(app.static_folder, 'avatars')
 if not os.path.exists(AVATAR_FOLDER):
@@ -336,7 +340,9 @@ def view_report(report_id):
 @app.route('/charts')
 @login_required
 def charts():
-    return render_template('charts.html')
+    projects = Project.query.filter_by(team_id=current_user.team_id).all()
+    return render_template('charts.html', projects=projects)
+
 
 
 @app.route('/')
@@ -434,10 +440,13 @@ def task_creator():
         deadline = request.form.get('deadline')
         assigned_to = request.form.get('assigned_to')
         created_by = request.form.get('created_by', current_user.id)
+        created_at_str = request.form.get('created_at')
 
         if not title or not priority or not project_id:
             flash("Заполните обязательные поля", "danger")
             return redirect(url_for('task_creator'))
+
+        created_at = datetime.strptime(created_at_str, '%Y-%m-%d') if created_at_str else datetime.utcnow()
 
         new_task = Task(
             title=title,
@@ -447,7 +456,8 @@ def task_creator():
             project_id=int(project_id),
             assigned_to=int(assigned_to) if assigned_to else None,
             created_by=int(created_by),
-            deadline=datetime.strptime(deadline, '%Y-%m-%d') if deadline else None
+            deadline=datetime.strptime(deadline, '%Y-%m-%d') if deadline else None,
+            created_at=created_at
         )
 
         db.session.add(new_task)
@@ -455,10 +465,10 @@ def task_creator():
         flash("Задача создана!", "success")
         return redirect(url_for('kanban'))
 
-    # ДЛЯ GET-запроса
     projects = Project.query.all()
     users = User.query.filter_by(team_id=current_user.team_id).all()
-    return render_template('task_creator.html', projects=projects, users=users)
+    current_date = date.today().strftime('%Y-%m-%d')
+    return render_template('task_creator.html', projects=projects, users=users, is_edit=False, current_date=current_date)
 
 
 
@@ -477,15 +487,19 @@ def edit_task(task_id):
         deadline = request.form.get('deadline')
         task.deadline = datetime.strptime(deadline, '%Y-%m-%d') if deadline else None
 
+        created_at_str = request.form.get('created_at')
+        if created_at_str:
+            task.created_at = datetime.strptime(created_at_str, '%Y-%m-%d')
+
         db.session.commit()
         flash("Задача успешно обновлена!", "success")
         return redirect(url_for('kanban'))
 
     projects = Project.query.filter_by(team_id=current_user.team_id).all()
     users = User.query.filter_by(team_id=current_user.team_id).all()
+    current_date = task.created_at.strftime('%Y-%m-%d') if task.created_at else date.today().strftime('%Y-%m-%d')
 
-    return render_template('task_creator.html', task=task, projects=projects, users=users, is_edit=True)
-
+    return render_template('task_creator.html', task=task, projects=projects, users=users, is_edit=True, current_date=current_date)
 
 
 @app.route('/delete_task/<int:task_id>')
@@ -525,15 +539,18 @@ def add_comment(task_id):
         parent_id=parent_id if parent_id else None
     )
 
-    if attachment and attachment.filename:
+    # Обработка файла и добавление комментария
+    if attachment and attachment.filename and allowed_file(attachment.filename):
         filename = secure_filename(attachment.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        attachment.save(filepath)
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        attachment.save(save_path)
+
         db.session.add(comment)
-        db.session.flush()  # получить comment.id
+        db.session.flush()  # Чтобы получить comment.id
+
         comment.attachments.append(CommentAttachment(
             filename=filename,
-            filepath=f'uploads/{filename}',
+            filepath=f'uploads/{filename}',  # путь относительный от static/
             comment_id=comment.id
         ))
     else:
@@ -556,6 +573,7 @@ def add_comment(task_id):
         "parent_id": comment.parent_id,
         "parent_author": comment.parent.author.username if comment.parent else None
     })
+
 
 
 
@@ -667,6 +685,33 @@ def remove_member(team_id, user_id):
         user.team_id = None
         db.session.commit()
     return redirect(url_for('team_detail', team_id=team_id))
+
+
+@app.route('/api/project/<int:project_id>/gantt')
+@login_required
+def get_gantt_data(project_id):
+    project = Project.query.get_or_404(project_id)
+    if project.team_id != current_user.team_id:
+        return jsonify({'error': 'Доступ запрещен'}), 403
+
+    tasks = Task.query.filter_by(project_id=project.id).all()
+    result = []
+
+    for task in tasks:
+        start_date = task.created_at.strftime('%Y-%m-%d') if task.created_at else '2024-01-01'
+        end_date = task.deadline.strftime('%Y-%m-%d') if task.deadline else start_date
+
+        result.append({
+            'id': f'task-{task.id}',
+            'name': task.title,
+            'start': start_date,
+            'end': end_date,
+            'progress': 100 if task.status.name == 'DONE' else 0,
+            'dependencies': ''
+        })
+
+    return jsonify(result)
+
 
 
 

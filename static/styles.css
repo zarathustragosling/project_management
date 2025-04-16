@@ -78,6 +78,23 @@ body {
     background-color: #c92a2a;
 }
 
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+  
+
+
+.comment-box[data-is-reply="1"] {
+    margin-left: 40px; /* отступ для ответа */
+    background-color: #2a2a2a; /* немного светлее фон */
+    border-left: 3px solid #4dabf7;
+    padding-left: 16px;
+}
+
+
 /* Forms */
 input, textarea, select {
     width: 100%;
@@ -264,11 +281,22 @@ a:active {
     border-radius: 9999px;
   }
 
+
+
   .comment-box {
-    background-color: #1f2937; /* темный фон */
-    padding: 1rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem; /* пространство между авой и текстом */
+  }
+  
+  .comment-box img {
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: cover;
+    border-radius: 9999px;
+    margin-top: 0; /* сбросить вылезание вверх */
+    display: block; /* убедиться, что это блочный */
   }
 
   .comment-avatar {
@@ -277,4 +305,62 @@ a:active {
 
   .comment-main {
     flex: 1;
+  }
+
+  /* Комментарии-ответы (вложенные) */
+.comment-box[data-is-reply="1"] {
+    background-color: #0e1628; /* синий фон */
+    padding: 16px;
+    border-radius: 12px;
+    margin-top: 12px;
+    margin-left: 40px; /* вложенность */
+}
+
+/* Комментарии верхнего уровня */
+.comment-box[data-is-reply="0"] {
+    background-color: #1f1f1f;
+    padding: 16px;
+    border-radius: 12px;
+    margin-top: 16px;
+}
+
+
+.vis-item.in-progress {
+    background-color: #3b82f6 !important;
+    border-color: #1d4ed8 !important;
+    color: white;
+  }
+  
+  .vis-item.completed {
+    background-color: #22c55e !important;
+    border-color: #15803d !important;
+    color: white;
+  }
+  
+  .vis-item.delayed {
+    background-color: #ef4444 !important;
+    border-color: #b91c1c !important;
+    color: white;
+  }
+  
+  .status-todo .bar {
+    fill: #f59f00 !important;
+  }
+  .status-in-progress .bar {
+    fill: #339af0 !important;
+  }
+  .status-done .bar {
+    fill: #51cf66 !important;
+  }
+  .status-default .bar {
+    fill: #ced4da !important;
+  }
+  
+  .gantt-tooltip {
+    padding: 8px;
+    background-color: #1f1f1f;
+    border-radius: 6px;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    font-size: 13px;
   }

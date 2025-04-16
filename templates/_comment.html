@@ -1,11 +1,15 @@
 <div class="flex items-start gap-3 mb-4 comment-box"
+     data-comment-id="{{ comment.id }}"
      data-parent-id="{{ comment.parent_id }}"
      data-is-reply="{{ 1 if comment.parent_id else 0 }}">
 
+  <!-- Аватарка -->
+  <div class="flex-shrink-0">
+    <img src="{{ comment.author.avatar or url_for('static', filename='default_avatar.png') }}"
+         class="w-10 h-10 rounded-full object-cover" alt="avatar">
+  </div>
 
-  <img src="{{ comment.author.avatar or url_for('static', filename='default_avatar.png') }}"
-       class="w-10 h-10 rounded-full object-cover" alt="avatar">
-
+  <!-- Контент -->
   <div class="bg-gray-800 p-4 rounded-lg w-full">
     <div class="flex items-center gap-2">
       <a href="{{ url_for('user_profile', user_id=comment.author.id) }}"
@@ -32,26 +36,23 @@
       </div>
     {% endif %}
 
-    {% if not parent %}
-  <button type="button"
-          class="reply-btn text-xs text-blue-400 mt-2"
-          data-username="{{ comment.author.username }}"
-          data-userid="{{ comment.author.id }}"
-          data-commentid="{{ comment.id }}">
-    Ответить
-  </button>
-{% endif %}
-
+    {% if not is_reply %}
+      <button type="button"
+              class="btn btn-sm mt-3 reply-btn"
+              data-username="{{ comment.author.username }}"
+              data-userid="{{ comment.author.id }}"
+              data-commentid="{{ comment.id }}">
+        Ответить
+      </button>
+    {% endif %}
 
     {% if comment.replies %}
       <div class="ml-10 mt-4 space-y-4">
         {% for reply in comment.replies %}
-  {% include "comment.html" with context %}
-{% set parent = true %}
-{% endfor %}
-
-      
-
+          {% set comment = reply %}
+          {% set is_reply = True %}
+          {% include "_comment.html" %}
+        {% endfor %}
       </div>
     {% endif %}
   </div>

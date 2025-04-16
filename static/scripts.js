@@ -2,6 +2,11 @@
   document.addEventListener('DOMContentLoaded', function () {
 
 
+    
+   
+
+
+
 
     function highlightMentions(text) {
         return text.replace(/<@(\d+):([\wА-яёЁ.-]+)>/g, (_, id, name) =>
@@ -111,157 +116,201 @@
       });
     }
   
-    // === Reply btn logic (initial) ===
-    const textarea = document.getElementById("commentContent");
-    const parentIdInput = document.getElementById("parent_id");
-    document.querySelectorAll(".reply-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const username = btn.dataset.username;
-        const userId = btn.dataset.userid;
-        const commentId = btn.dataset.commentid;
-        textarea.value = `<@${userId}:${username}> `;
-        parentIdInput.value = commentId;
-        textarea.focus();
+     // Reply btn logic (initial)
+  const textarea = document.getElementById("commentContent");
+  const parentIdInput = document.getElementById("parent_id");
+  document.querySelectorAll(".reply-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const { username, userid, commentid } = btn.dataset;
+      textarea.value = `<@${userid}:${username}> `;
+      parentIdInput.value = commentid;
+      textarea.focus();
+    });
+  });
+
+  // AJAX Comment Submit
+  const commentForm = document.getElementById("commentForm");
+  if (commentForm) {
+    commentForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(commentForm);
+      const taskId = commentForm.action.split('/task/')[1].split('/')[0];
+      fetch(`/task/${taskId}/comment`, {
+        method: 'POST',
+        body: formData
+      })
+      .then(async res => {
+        const data = await res.json();
+        if (!data.success) return alert(data.error || 'Ошибка сервера');
+        const c = data.comment;
+
+        const isReply = !!c.parent_id;
+
+        const commentEl = document.createElement("div");
+        commentEl.className = "flex items-start gap-3 mb-4 comment-box";
+        commentEl.dataset.commentId = c.id;
+        commentEl.dataset.isReply = isReply ? "1" : "0";
+
+        const avatar = document.createElement("img");
+        avatar.src = c.author.avatar;
+        avatar.alt = "avatar";
+        avatar.className = "w-8 h-8 rounded-full object-cover mt-1";
+
+        const contentBox = document.createElement("div");
+        contentBox.className = "bg-gray-800 p-4 rounded-lg w-full";
+
+        const meta = document.createElement("div");
+        meta.className = "flex items-center gap-2";
+        meta.innerHTML = `
+          <a href="/user/${c.author.id}" class="text-sm font-bold text-white hover:underline">${c.author.username}</a>
+          <span class="text-xs text-gray-400">${c.created_at}</span>
+        `;
+
+        const replyInfo = c.parent_author ? `
+          <div class="text-xs text-blue-300 mb-1">
+            Ответ на <a href="/user/${c.parent_id}" class="hover:underline">@${c.parent_author}</a>
+          </div>` : '';
+
+        const replyButton = !isReply ? `
+          <button class="reply-btn text-xs mt-2 text-blue-400 hover:underline"
+            data-username="${c.author.username}"
+            data-userid="${c.author.id}"
+            data-commentid="${c.id}">
+            Ответить
+          </button>` : '';
+
+        const textHTML = `
+          ${replyInfo}
+          <p class="text-white mt-1 text-sm">${highlightMentions(c.content)}</p>
+          ${c.attachment ? `<a href="/static/uploads/${c.attachment}" class="text-sm text-blue-400 hover:underline block mt-2">📁 ${c.attachment}</a>` : ""}
+          ${replyButton}
+        `;
+
+        contentBox.appendChild(meta);
+        contentBox.insertAdjacentHTML('beforeend', textHTML);
+        commentEl.appendChild(avatar);
+        commentEl.appendChild(contentBox);
+
+        if (isReply) {
+          const parent = document.querySelector(`[data-comment-id='${c.parent_id}']`);
+          let repliesBlock = parent?.querySelector('.reply-container');
+          if (!repliesBlock) {
+            repliesBlock = document.createElement('div');
+            repliesBlock.className = 'ml-10 mt-4 space-y-4 reply-container';
+            parent.appendChild(repliesBlock);
+          }
+          repliesBlock.appendChild(commentEl);
+        } else {
+          document.getElementById("comments-list").appendChild(commentEl);
+        }
+
+        if (!isReply) {
+          const replyBtn = commentEl.querySelector('.reply-btn');
+          if (replyBtn) {
+            replyBtn.addEventListener("click", () => {
+              textarea.value = `<@${replyBtn.dataset.userid}:${replyBtn.dataset.username}> `;
+              parentIdInput.value = replyBtn.dataset.commentid;
+              textarea.focus();
+            });
+          }
+        }
+
+        commentForm.reset();
+        parentIdInput.value = "";
+      })
+      .catch(err => {
+        console.error("Ошибка отправки:", err);
+        alert("Ошибка отправки комментария.");
       });
     });
+  }
+
+
+
+  // === Визуальное восстановление дерева комментариев ===
+document.querySelectorAll('.comment-box[data-is-reply="1"]').forEach(reply => {
+    const parentId = reply.dataset.parentId;
+    const parent = document.querySelector(`.comment-box[data-is-reply="0"][data-comment-id="${parentId}"]`);
   
-    // === AJAX Comment Submit ===
-    const commentForm = document.getElementById("commentForm");
-    if (commentForm) {
-      commentForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const formData = new FormData(commentForm);
-        const taskId = commentForm.action.split('/task/')[1].split('/')[0];
-        fetch(`/task/${taskId}/comment`, {
-          method: 'POST',
-          body: formData
-        })
-        .then(async res => {
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          const data = await res.json();
-          if (data.success) {
-            const c = data.comment;
-            const commentEl = document.createElement("div");
-            commentEl.className = "flex items-start gap-3 mb-4";
-            commentEl.dataset.commentId = c.id;
-            const avatar = document.createElement("img");
-            avatar.src = c.author.avatar;
-            avatar.alt = "avatar";
-            avatar.className = "w-8 h-8 rounded-full object-cover mt-1";
-            const contentBox = document.createElement("div");
-            contentBox.className = "bg-gray-800 p-4 rounded-lg w-full";
-            const meta = document.createElement("div");
-            meta.className = "flex items-center gap-2";
-            meta.innerHTML = `
-              <a href="/user/${c.author.id}" class="text-sm font-bold text-white hover:underline">${c.author.username}</a>
-              <span class="text-xs text-gray-400">${c.created_at}</span>
-            `;
-            const replyInfo = c.parent_author ? `
-              <div class="text-xs text-blue-300 mb-1">
-                Ответ на <a href="/user/${c.parent_id}" class="hover:underline">@${c.parent_author}</a>
-              </div>` : '';
-            const textHTML = `
-              ${replyInfo}
-              <p class="text-white mt-1 text-sm">${highlightMentions(c.content)}</p>
-              ${c.attachment ? `<a href="/static/uploads/${c.attachment}" class="text-sm text-blue-400 hover:underline block mt-2">📁 ${c.attachment}</a>` : ""}
-              <button class="reply-btn text-xs mt-2 text-blue-400 hover:underline"
-                      data-username="${c.author.username}"
-                      data-userid="${c.author.id}"
-                      data-commentid="${c.id}">Ответить</button>
-            `;
-            contentBox.appendChild(meta);
-            contentBox.insertAdjacentHTML('beforeend', textHTML);
-            commentEl.appendChild(avatar);
-            commentEl.appendChild(contentBox);
+    if (parent) {
+      // Добавляем reply-container если ещё не добавлен
+      let replyContainer = parent.querySelector('.reply-container');
+      if (!replyContainer) {
+        replyContainer = document.createElement('div');
+        replyContainer.classList.add('reply-container', 'ml-10', 'mt-4', 'space-y-2');
+        parent.appendChild(replyContainer);
+      }
   
-            if (c.parent_id) {
-              const parent = document.querySelector(`[data-comment-id='${c.parent_id}']`);
-              let repliesBlock = parent?.querySelector('.reply-container');
-              if (!repliesBlock) {
-                repliesBlock = document.createElement('div');
-                repliesBlock.className = 'ml-10 mt-4 space-y-4 reply-container';
-                parent.appendChild(repliesBlock);
-              }
-              repliesBlock.appendChild(commentEl);
-              if (!parent.querySelector(".toggle-thread")) {
-                const toggle = document.createElement("button");
-                toggle.type = "button";
-                toggle.className = "toggle-thread text-xs text-gray-400 ml-2";
-                toggle.textContent = "Свернуть ветку";
-                toggle.addEventListener("click", () => {
-                  repliesBlock.classList.toggle("hidden");
-                  toggle.textContent = repliesBlock.classList.contains("hidden") ? "Показать ветку" : "Свернуть ветку";
-                });
-                parent.querySelector(".bg-gray-800")?.appendChild(toggle);
-              }
-            } else {
-              document.getElementById("comments-list").appendChild(commentEl);
-            }
+      // Вставляем ответ внутрь reply-container
+      replyContainer.appendChild(reply);
   
-            const newReplyBtn = commentEl.querySelector('.reply-btn');
-            if (newReplyBtn) {
-              newReplyBtn.addEventListener("click", () => {
-                textarea.value = `<@${newReplyBtn.dataset.userid}:${newReplyBtn.dataset.username}> `;
-                parentIdInput.value = newReplyBtn.dataset.commentid;
-                textarea.focus();
-              });
-            }
-  
-            commentForm.reset();
-            parentIdInput.value = "";
-          } else {
-            alert(data.error || "Ошибка сервера");
-          }
-        })
-        .catch(err => {
-          console.error("Ошибка отправки:", err);
-          alert("Ошибка отправки комментария.");
-        });
-      });
+      
     }
+  });
 
-    document.querySelectorAll('.comment-box[data-is-reply="1"] .reply-btn')
-    .forEach(btn => btn.remove());
   
- 
+    // === CHARTS: GANTT ===
+    const container = document.getElementById("gantt-container");
+    const select = document.getElementById("projectSelect");
+    let timeline = null;
 
-    document.querySelectorAll('.comment-box').forEach(comment => {
-        const repliesBlock = comment.querySelector('.replies');
-        if (repliesBlock && repliesBlock.children.length > 0) {
-          const toggleBtn = document.createElement('button');
-          toggleBtn.textContent = 'Свернуть ветку';
-          toggleBtn.className = 'toggle-thread text-xs text-blue-400 mt-2 block';
-    
-          toggleBtn.addEventListener('click', () => {
-            repliesBlock.classList.toggle('hidden');
-            toggleBtn.textContent = repliesBlock.classList.contains('hidden')
-              ? 'Показать ветку'
-              : 'Свернуть ветку';
-          });
-    
-          comment.appendChild(toggleBtn);
-        }
-      });
-    
-      // Обработчик кнопки "Ответить"
-      document.querySelectorAll('.reply-btn').forEach(button => {
-        button.addEventListener('click', () => {
-          const username = button.dataset.username;
-          const userId = button.dataset.userid;
-          const commentId = button.dataset.commentid;
-    
-          const input = document.querySelector('#comment-input');
-          input.value = `<@${userId}:${username}> `;
-          input.focus();
-    
-          const parentIdInput = document.querySelector('#parent-comment-id');
-          if (parentIdInput) parentIdInput.value = commentId;
-        });
-      });
-
-
-
+    function renderGantt(data) {
+        // Создаём группы — каждая задача в своей дорожке
+        const groups = new vis.DataSet(data.map((t, index) => ({
+          id: index,
+          content: ''
+        })));
+      
+        // Каждая задача — item, привязанная к своей группе
+        const items = new vis.DataSet(data.map((t, index) => ({
+          id: t.id,
+          content: `<b>${t.name}</b>`,
+          start: t.start,
+          end: t.end,
+          group: index, // 👈 Привязка к дорожке
+          className: t.status || '',
+          title: `
+            <div>
+              <strong>${t.name}</strong><br/>
+              📅 ${t.start} → ${t.end}<br/>
+              📝 ${t.description || 'Без описания'}
+            </div>
+          `
+        })));
+      
+        const now = new Date();
+        const options = {
+          currentTime: now,
+          showCurrentTime: true,
+          stack: false, // важно: stack = false → группировка работает
+          zoomable: true,
+          moveable: true,
+          editable: false,
+          margin: { item: 20, axis: 40 },
+          orientation: 'top',
+          start: new Date(new Date().setDate(new Date().getDate() - 5)),
+          end: new Date(new Date().setDate(new Date().getDate() + 30)),
+          timeAxis: { scale: 'day', step: 1 }
+        };
+      
+        if (timeline) timeline.destroy();
+        timeline = new vis.Timeline(container, items, groups, options); // 👈 groups сюда
+      }
       
 
-  });
-  
+    async function loadGantt(projectId) {
+      try {
+        const res = await fetch(`/api/project/${projectId}/gantt`);
+        const data = await res.json();
+        renderGantt(data);
+      } catch (err) {
+        console.error("Ошибка загрузки диаграммы:", err);
+      }
+    }
+
+    select.addEventListener("change", () => loadGantt(select.value));
+    loadGantt(select.value); // первичная загрузка
+
+
+});
+

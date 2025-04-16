@@ -1,14 +1,25 @@
 {% extends 'base.html' %}
-
-{% block title %}Диаграммы{% endblock %}
+{% block title %}Диаграмма Ганта{% endblock %}
 
 {% block content %}
+<div class="container space-y-6">
+  <h1 class="text-2xl font-bold mb-4">📊 Диаграмма Ганта</h1>
 
+  <div class="flex gap-4 mb-4">
+    <label for="projectSelect" class="font-semibold">Выберите проект:</label>
+    <select id="projectSelect" class="bg-gray-800 text-white border border-gray-600 rounded p-2">
+      {% for project in projects %}
+        <option value="{{ project.id }}">{{ project.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
 
-<div class="container">
-    <h1>Диаграммы</h1>
-    <button class="btn">📊 Создать диаграмму Ганта</button>
-    <button class="btn">📈 Создать график</button>
+  <div id="gantt-container" class="bg-gray-900 rounded-lg p-4 shadow-md overflow-x-auto" style="min-height: 500px;"></div>
 </div>
+
+<!-- Vis.js Gantt (Timeline) -->
+<link href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
+
 
 {% endblock %}

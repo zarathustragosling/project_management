@@ -60,7 +60,6 @@ class Task(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     deadline = db.Column(db.Date)
     comments = db.relationship('Comment', back_populates='task', lazy='joined')
     project = db.relationship('Project', back_populates='tasks')  # Matches back_populates in Project
