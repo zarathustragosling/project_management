@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from database import db, User, Project, Task, Report, Team, TaskStatus, Comment
@@ -653,7 +653,7 @@ def create_project():
         db.session.add(new_project)
         db.session.commit()
         flash("Проект создан!", "success")
-        return redirect(url_for('projects'))
+        return redirect(url_for('project_list'))
 
     teams = Team.query.all()
     return render_template('create_project.html', teams=teams)
@@ -712,6 +712,10 @@ def get_gantt_data(project_id):
 
     return jsonify(result)
 
+@app.route("/comment/<int:comment_id>/html")
+def render_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    return render_template("_comment_block.html", comment=comment, current_user=current_user)
 
 
 

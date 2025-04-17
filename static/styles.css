@@ -8,10 +8,12 @@
 }
 
 body {
-    background-color: #121212;
-    color: #fff;
+    font-family: 'Inter', sans-serif;
+    background-color: #0f172a;
+    color: #e2e8f0;
     line-height: 1.6;
-}
+  }
+  
 
 /* Navbar */
 .navbar {
@@ -87,12 +89,7 @@ body {
   
 
 
-.comment-box[data-is-reply="1"] {
-    margin-left: 40px; /* отступ для ответа */
-    background-color: #2a2a2a; /* немного светлее фон */
-    border-left: 3px solid #4dabf7;
-    padding-left: 16px;
-}
+
 
 
 /* Forms */
@@ -263,68 +260,6 @@ a:active {
   }
   
 
-  .comment-reply-wrapper {
-    position: relative;
-    margin-left: 2.5rem; /* отступ для ветки */
-    padding-left: 1rem;
-    border-left: 2px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .comment-reply-wrapper::before {
-    content: '';
-    position: absolute;
-    top: 0.75rem;
-    left: -0.625rem;
-    width: 0.75rem;
-    height: 0.75rem;
-    background-color: #3b82f6; /* синяя точка */
-    border-radius: 9999px;
-  }
-
-
-
-  .comment-box {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem; /* пространство между авой и текстом */
-  }
-  
-  .comment-box img {
-    flex-shrink: 0;
-    width: 2.5rem;
-    height: 2.5rem;
-    object-fit: cover;
-    border-radius: 9999px;
-    margin-top: 0; /* сбросить вылезание вверх */
-    display: block; /* убедиться, что это блочный */
-  }
-
-  .comment-avatar {
-    flex-shrink: 0;
-  }
-
-  .comment-main {
-    flex: 1;
-  }
-
-  /* Комментарии-ответы (вложенные) */
-.comment-box[data-is-reply="1"] {
-    background-color: #0e1628; /* синий фон */
-    padding: 16px;
-    border-radius: 12px;
-    margin-top: 12px;
-    margin-left: 40px; /* вложенность */
-}
-
-/* Комментарии верхнего уровня */
-.comment-box[data-is-reply="0"] {
-    background-color: #1f1f1f;
-    padding: 16px;
-    border-radius: 12px;
-    margin-top: 16px;
-}
-
-
 .vis-item.in-progress {
     background-color: #3b82f6 !important;
     border-color: #1d4ed8 !important;
@@ -364,3 +299,111 @@ a:active {
     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     font-size: 13px;
   }
+
+/* Основной блок комментария */
+.comment-thread {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+  
+  /* Вложенный комментарий */
+  .comment-thread[data-is-reply="1"] {
+    margin-left: 1.5rem;
+    border-left: 2px solid rgba(100, 116, 139, 0.4); /* slate-600 */
+    padding-left: 1rem;
+  }
+  
+  /* Контейнер: аватар + блок */
+  .comment-thread > .flex {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  /* Аватар */
+  .comment-thread img {
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: cover;
+    border-radius: 9999px;
+    display: block;
+  }
+  
+  /* Контент комментария */
+  .comment-thread .bg-slate-800 {
+    background-color: #1e293b;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    width: 100%;
+  }
+  
+  /* Заголовок: имя + дата */
+  .comment-thread .flex.items-center {
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Автор */
+  .comment-thread a {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #ffffff;
+    transition: color 0.2s ease;
+  }
+  .comment-thread a:hover {
+    color: #60a5fa; /* text-blue-400 */
+  }
+  
+  /* Дата */
+  .comment-thread span.text-gray-400 {
+    font-size: 0.75rem;
+    color: #9ca3af;
+  }
+  
+  /* Текст */
+  .comment-thread p {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #f9fafb;
+    margin-top: 0.5rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  
+  /* Вложения */
+  .comment-thread a.text-blue-400 {
+    display: block;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+  
+  /* Кнопка ответить */
+  .reply-btn {
+    font-size: 0.75rem;
+    margin-top: 0.75rem;
+    color: #60a5fa;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .reply-btn:hover {
+    text-decoration: underline;
+  }
+  
+  /* Контейнер вложенных комментариев */
+  .comment-thread .space-y-4 > * + * {
+    margin-top: 1rem;
+  }
+  
+  /* Mobile responsive fix */
+  @media (max-width: 640px) {
+    .comment-thread {
+      margin-left: 0 !important;
+      border-left: none !important;
+      padding-left: 0 !important;
+    }
+  }
+  

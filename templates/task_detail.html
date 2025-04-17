@@ -3,19 +3,35 @@
 
 {% block content %}
 
-<div class="container space-y-6">
-  <div class="space-y-2">
-    <h1 class="text-3xl font-bold">{{ task.title }}</h1>
-    <p class="text-gray-400">{{ task.description or "Нет описания" }}</p>
+<div class="hidden">
+  <div class="w-10 h-10 rounded-full object-cover"></div>
+  <div class="text-sm text-xs text-white text-gray-400 text-blue-400"></div>
+  <div class="hover:underline hover:text-blue-400"></div>
+  <div class="bg-slate-800 bg-slate-700 bg-gray-800 bg-gray-900"></div>
+  <div class="p-4 rounded-lg mt-2 mb-4 space-y-4"></div>
+  <div class="ml-10 ml-6 border-l border-slate-600 pl-4"></div>
+  <div class="flex items-start gap-3"></div>
+  <button class="btn btn-sm reply-btn"></button>
+</div>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-      <p><strong>Проект:</strong> <a href="{{ url_for('project_detail', project_id=task.project.id) }}" class="text-blue-400 hover:underline">{{ task.project.name }}</a></p>
-      <p><strong>Приоритет:</strong> {{ task.priority }}</p>
-      <p><strong>Статус:</strong> {{ task.status.value }}</p>
-      <p><strong>Создано:</strong> {{ task.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
-      <p><strong>Дедлайн:</strong> {{ task.deadline.strftime('%d.%m.%Y') if task.deadline else "Не установлен" }}</p>
-      <p><strong>Ответственный:</strong> {{ task.assigned_user.username if task.assigned_user else "Не назначен" }}</p>
-      <p><strong>Постановщик:</strong> {{ task.creator.username }}</p>
+
+
+
+
+<div class="max-w-5xl mx-auto space-y-10 px-4 pt-8">
+  <!-- Task Header -->
+  <div class="space-y-4">
+    <h1 class="text-3xl font-bold tracking-tight text-white">{{ task.title }}</h1>
+    <p class="text-slate-400 text-base">{{ task.description or "Нет описания" }}</p>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-slate-300">
+      <p><strong class="text-white">📁 Проект:</strong> <a href="{{ url_for('project_detail', project_id=task.project.id) }}" class="text-blue-400 hover:underline">{{ task.project.name }}</a></p>
+      <p><strong class="text-white">🔥 Приоритет:</strong> {{ task.priority }}</p>
+      <p><strong class="text-white">📌 Статус:</strong> {{ task.status.value }}</p>
+      <p><strong class="text-white">🕓 Создано:</strong> {{ task.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+      <p><strong class="text-white">⏳ Дедлайн:</strong> {{ task.deadline.strftime('%d.%m.%Y') if task.deadline else "Не установлен" }}</p>
+      <p><strong class="text-white">👤 Ответственный:</strong> {{ task.assigned_user.username if task.assigned_user else "Не назначен" }}</p>
+      <p><strong class="text-white">🛠 Постановщик:</strong> {{ task.creator.username }}</p>
     </div>
 
     {% if current_user.id == task.created_by %}
@@ -23,27 +39,35 @@
     {% endif %}
   </div>
 
-  <hr class="my-6">
-  <h2 class="text-xl font-semibold mb-3">Комментарии</h2>
+  <!-- Comments -->
+  <div class="space-y-6">
+    
+    <h2 class="text-2xl font-semibold text-white">💬 Комментарии</h2>
 
-  <div id="comments-list" class="space-y-4">
-    {% for comment in task.comments if not comment.parent_id %}
-      {% include "_comment.html" with context %}
-    {% endfor %}
+    <div id="comments-list" class="space-y-4">
+      {% for comment in task.comments if not comment.parent_id %}
+        {% include "_comment_block.html" with context %}
+      {% endfor %}
+    </div>
+    
+
+    <div class="mt-6">
+      <h3 class="text-lg font-semibold mb-2 text-white">📝 Добавить комментарий</h3>
+      <form id="commentForm" method="POST"
+            action="{{ url_for('add_comment', task_id=task.id) }}"
+            enctype="multipart/form-data"
+            class="space-y-4 bg-slate-800 p-4 rounded-lg">
+        <input type="hidden" name="parent_id" id="parent_id" value="">
+        <textarea name="content" id="commentContent" rows="3" required
+                  class="w-full p-3 rounded bg-gray-900 text-white border border-gray-700 focus:border-blue-400"
+                  placeholder="Ваш комментарий..."></textarea>
+        <input type="file" name="attachment" class="block text-white text-sm" />
+        <button type="submit" class="btn">💬 Отправить</button>
+      </form>
+    </div>
   </div>
-
-  <h3 class="text-lg font-medium mt-8">Добавить комментарий</h3>
-  <form id="commentForm" method="POST"
-        action="{{ url_for('add_comment', task_id=task.id) }}"
-        enctype="multipart/form-data"
-        class="space-y-4 mt-4">
-    <input type="hidden" name="parent_id" id="parent_id" value="">
-    <textarea name="content" id="commentContent" rows="3" required
-              class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600"
-              placeholder="Ваш комментарий..."></textarea>
-    <input type="file" name="attachment" class="block text-white" />
-    <button type="submit" class="btn">Отправить</button>
-  </form>
+  
 </div>
+
 
 {% endblock %}

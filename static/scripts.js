@@ -139,85 +139,53 @@
         method: 'POST',
         body: formData
       })
+      // --- Новый блок замены fetch(...).then(...) внутри commentForm.addEventListener
+
       .then(async res => {
         const data = await res.json();
         if (!data.success) return alert(data.error || 'Ошибка сервера');
-        const c = data.comment;
-
-        const isReply = !!c.parent_id;
-
-        const commentEl = document.createElement("div");
-        commentEl.className = "flex items-start gap-3 mb-4 comment-box";
-        commentEl.dataset.commentId = c.id;
-        commentEl.dataset.isReply = isReply ? "1" : "0";
-
-        const avatar = document.createElement("img");
-        avatar.src = c.author.avatar;
-        avatar.alt = "avatar";
-        avatar.className = "w-8 h-8 rounded-full object-cover mt-1";
-
-        const contentBox = document.createElement("div");
-        contentBox.className = "bg-gray-800 p-4 rounded-lg w-full";
-
-        const meta = document.createElement("div");
-        meta.className = "flex items-center gap-2";
-        meta.innerHTML = `
-          <a href="/user/${c.author.id}" class="text-sm font-bold text-white hover:underline">${c.author.username}</a>
-          <span class="text-xs text-gray-400">${c.created_at}</span>
-        `;
-
-        const replyInfo = c.parent_author ? `
-          <div class="text-xs text-blue-300 mb-1">
-            Ответ на <a href="/user/${c.parent_id}" class="hover:underline">@${c.parent_author}</a>
-          </div>` : '';
-
-        const replyButton = !isReply ? `
-          <button class="reply-btn text-xs mt-2 text-blue-400 hover:underline"
-            data-username="${c.author.username}"
-            data-userid="${c.author.id}"
-            data-commentid="${c.id}">
-            Ответить
-          </button>` : '';
-
-        const textHTML = `
-          ${replyInfo}
-          <p class="text-white mt-1 text-sm">${highlightMentions(c.content)}</p>
-          ${c.attachment ? `<a href="/static/uploads/${c.attachment}" class="text-sm text-blue-400 hover:underline block mt-2">📁 ${c.attachment}</a>` : ""}
-          ${replyButton}
-        `;
-
-        contentBox.appendChild(meta);
-        contentBox.insertAdjacentHTML('beforeend', textHTML);
-        commentEl.appendChild(avatar);
-        commentEl.appendChild(contentBox);
-
+      
+        const newCommentId = data.comment.id;
+      
+        // 👇 Получаем HTML с сервера
+        const html = await fetch(`/comment/${newCommentId}/html`).then(r => r.text());
+      
+        // 👇 Создаём временный элемент
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = html;
+        const commentEl = wrapper.firstElementChild;
+      
+        // 👇 Вставляем в DOM
+        const isReply = !!data.comment.parent_id;
         if (isReply) {
-          const parent = document.querySelector(`[data-comment-id='${c.parent_id}']`);
-          let repliesBlock = parent?.querySelector('.reply-container');
+          const parent = document.querySelector(`[data-comment-id='${data.comment.parent_id}']`);
+          let repliesBlock = parent.querySelector('.reply-container');
           if (!repliesBlock) {
             repliesBlock = document.createElement('div');
-            repliesBlock.className = 'ml-10 mt-4 space-y-4 reply-container';
+            repliesBlock.className = 'reply-container ml-10 mt-4 space-y-4';
             parent.appendChild(repliesBlock);
           }
           repliesBlock.appendChild(commentEl);
         } else {
           document.getElementById("comments-list").appendChild(commentEl);
         }
-
-        if (!isReply) {
-          const replyBtn = commentEl.querySelector('.reply-btn');
-          if (replyBtn) {
-            replyBtn.addEventListener("click", () => {
-              textarea.value = `<@${replyBtn.dataset.userid}:${replyBtn.dataset.username}> `;
-              parentIdInput.value = replyBtn.dataset.commentid;
-              textarea.focus();
-            });
-          }
+      
+        // Повесим кнопку "Ответить"
+        const replyBtn = commentEl.querySelector('.reply-btn');
+        if (replyBtn) {
+          replyBtn.addEventListener("click", () => {
+            textarea.value = `<@${replyBtn.dataset.userid}:${replyBtn.dataset.username}> `;
+            parentIdInput.value = replyBtn.dataset.commentid;
+            textarea.focus();
+          });
         }
-
+      
         commentForm.reset();
         parentIdInput.value = "";
       })
+      
+  
+      
       .catch(err => {
         console.error("Ошибка отправки:", err);
         alert("Ошибка отправки комментария.");
@@ -310,6 +278,7 @@ document.querySelectorAll('.comment-box[data-is-reply="1"]').forEach(reply => {
 
     select.addEventListener("change", () => loadGantt(select.value));
     loadGantt(select.value); // первичная загрузка
+
 
 
 });

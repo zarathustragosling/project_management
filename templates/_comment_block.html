@@ -1,0 +1,58 @@
+{% set comment = nested_comment if nested_comment is defined else comment %}
+{% set is_reply = comment.parent_id is not none %}
+
+<div class="comment-thread {{ 'ml-6 border-l border-slate-600 pl-4' if is_reply else '' }}"
+     data-comment-id="{{ comment.id }}"
+     data-parent-id="{{ comment.parent_id }}"
+     data-is-reply="{{ 1 if is_reply else 0 }}">
+
+  <div class="flex items-start gap-3">
+    <img src="{{ comment.author.avatar or url_for('static', filename='default_avatar.png') }}"
+         class="w-10 h-10 rounded-full object-cover" alt="avatar">
+
+    <div class="{{ 'bg-slate-700' if is_reply else 'bg-gray-800' }} p-4 rounded-lg w-full">
+      <div class="flex items-center gap-2 text-sm">
+        <a href="{{ url_for('user_profile', user_id=comment.author.id) }}"
+           class="font-semibold text-white hover:text-blue-400 transition">
+           {{ comment.author.username }}
+        </a>
+        <span class="text-xs text-gray-400">
+          {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}
+        </span>
+      </div>
+
+      <p class="mt-2 text-sm text-white whitespace-pre-wrap break-words">
+        {{ comment.content | highlight_mentions | safe }}
+      </p>
+
+      {% if comment.attachments %}
+        <div class="mt-2 space-y-1">
+          {% for attachment in comment.attachments %}
+            <a href="{{ url_for('static', filename=attachment.filepath) }}"
+               class="text-blue-400 hover:underline text-sm block">
+              📎 {{ attachment.filename }}
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if not is_reply %}
+        <button class="reply-btn mt-3 text-xs text-blue-400 hover:underline"
+                data-username="{{ comment.author.username }}"
+                data-userid="{{ comment.author.id }}"
+                data-commentid="{{ comment.id }}">
+          Ответить
+        </button>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if comment.replies %}
+    <div class="mt-4 space-y-4">
+      {% for reply in comment.replies|sort(attribute='created_at') %}
+        {% set nested_comment = reply %}
+        {% include "_comment_block.html" %}
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>

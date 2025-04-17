@@ -1,25 +1,70 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Проектное управление{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- TailwindCSS & Flowbite -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Custom -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
     <script src="{{ url_for('static', filename='scripts.js') }}" defer></script>
-    <!-- CSS -->
-<link rel="stylesheet" href="https://unpkg.com/frappe-gantt/dist/frappe-gantt.css">
-<!-- JS -->
-<script src="https://unpkg.com/frappe-gantt/dist/frappe-gantt.min.js"></script>
 
-    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-</head>
-<body>
+    <!-- Gantt -->
+    <link rel="stylesheet" href="https://unpkg.com/frappe-gantt/dist/frappe-gantt.css" />
+    <script src="https://unpkg.com/frappe-gantt/dist/frappe-gantt.min.js"></script>
+  </head>
 
+  <body class="bg-slate-950 text-white font-inter min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-900 border-b border-slate-800 shadow-md">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <a href="/" class="text-xl font-semibold text-blue-400">Проектное управление</a>
+        <div class="flex gap-4 items-center text-sm">
+          <a href="{{ url_for('project_list') }}" class="hover:text-blue-400">Проекты</a>
+          <a href="{{ url_for('kanban') }}" class="hover:text-blue-400">Канбан</a>
+          <a href="{{ url_for('charts') }}" class="hover:text-blue-400">Диаграммы</a>
+          <a href="{{ url_for('reports') }}" class="hover:text-blue-400">Отчёты</a>
+          {% if current_user.team_id %}
+            <a href="{{ url_for('team_detail', team_id=current_user.team_id) }}" class="btn-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">Команда</a>
+          {% else %}
+            <a href="{{ url_for('edit_team') }}" class="btn-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">Команда</a>
+          {% endif %}
+        </div>
+        <div class="flex gap-2 items-center text-sm">
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('update_profile') }}" class="hover:text-blue-400">Профиль</a>
+            <a href="{{ url_for('dashboard') }}" class="hover:text-blue-400">Кабинет</a>
+            <a href="{{ url_for('logout') }}" class="btn-sm bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">Выйти</a>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="hover:text-blue-400">Войти</a>
+            <a href="{{ url_for('register') }}" class="hover:text-blue-400">Регистрация</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div class="space-y-2 p-4">
+      <div class="mt-24 max-w-3xl mx-auto px-4 space-y-2">
         {% for category, message in messages %}
           <div class="text-sm px-4 py-2 rounded {{ 'bg-green-600' if category == 'success' else 'bg-red-600' }}">
             {{ message }}
@@ -27,36 +72,39 @@
         {% endfor %}
       </div>
     {% endif %}
-  {% endwith %}
+    {% endwith %}
+
+    <!-- Page content -->
+    <main class="mt-32 max-w-7xl mx-auto px-4">
+      {% block content %}{% endblock %}
+    </main>
+
+
+
+
+    <!-- Force Tailwind to preserve dynamically used classes -->
+<div class="hidden">
+    text-xs text-sm text-white text-blue-400 text-gray-400
+    hover:underline hover:bg-gray-700 hover:text-blue-400
+    bg-gray-800 bg-gray-900 bg-slate-800 bg-slate-700
+    rounded rounded-lg rounded-xl
+    w-10 h-10 object-cover
+    btn btn-sm
+    ml-10 ml-12 mt-2 mt-4 space-y-4
+    flex items-start gap-3 items-center justify-between font-bold transition
+  </div>
+
+  <div class="hidden">
+    text-sm text-xs text-white text-gray-400 text-blue-400
+    hover:underline hover:text-blue-400
+    w-10 h-10 object-cover rounded-full
+    bg-slate-800 p-4 rounded-lg
+    flex items-start gap-3
+    ml-6 border-l border-slate-600 pl-4
+    mt-2 mb-4 space-y-4
+    btn btn-sm reply-btn
+  </div>
   
 
-
-    <nav class="navbar">
-        <a href="{{ url_for('project_list') }}">Проекты</a>
-        <a href="{{ url_for('kanban') }}">Kanban-доска</a>
-        <a href="{{ url_for('charts') }}">Диаграммы</a>
-        <a href="{{ url_for('reports') }}">Отчёты</a>
-
-        {% if current_user.team_id %}
-        <a href="{{ url_for('team_detail', team_id=current_user.team_id) }}" class="btn">Команда</a>
-      {% else %}
-        <a href="{{ url_for('edit_team') }}" class="btn">Команда</a>
-      {% endif %}
-      
-
-        {% if current_user.is_authenticated %}
-        
-            <a href="{{ url_for('update_profile') }}" class="btn"> Профиль</a>
-            <a href="{{ url_for('dashboard') }}" class="btn">Личный кабинет</a>
-            <a href="{{ url_for('logout') }}" class="btn btn-danger">Выйти</a>
-        {% else %}
-            <a href="{{ url_for('login') }}" class="btn">Войти</a>
-            <a href="{{ url_for('register') }}" class="btn">Зарегистрироваться</a>
-        {% endif %}
-    </nav>
-    <div class="content">
-        {% block content %}{% endblock %}
-    </div>
-
-</body>
+  </body>
 </html>

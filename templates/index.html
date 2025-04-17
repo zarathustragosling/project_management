@@ -3,33 +3,59 @@
 {% block title %}Главная{% endblock %}
 
 {% block content %}
-<div class="container">
-    {% if not current_user.is_authenticated %}
-        <!-- Приветствие для неавторизованных пользователей -->
-        <div class="auth-container">
-            <div class="auth-box">
-                <h2>Добро пожаловать в систему управления проектами!</h2>
-                <p>Пожалуйста, <a href="{{ url_for('login') }}">войдите</a> или <a href="{{ url_for('register') }}">зарегистрируйтесь</a>, чтобы начать работу.</p>
-            </div>
-        </div>
-    {% else %}
-        <!-- Контент для авторизованных пользователей -->
-        <h1>Привет, {{ current_user.username }}!</h1>
-        <p>Ваша команда: {{ current_user.team.name if current_user.team else "Не состоит в команде" }}</p>
+<div class="max-w-6xl mx-auto px-4 py-8">
+  {% if not current_user.is_authenticated %}
+    <!-- Для неавторизованных -->
+    <div class="bg-slate-800 rounded-xl shadow-lg p-8 text-center space-y-4">
+      <h2 class="text-2xl font-bold text-white">Добро пожаловать в систему управления проектами!</h2>
+      <p class="text-slate-300">
+        <a href="{{ url_for('login') }}" class="text-blue-400 hover:underline">Войдите</a> или 
+        <a href="{{ url_for('register') }}" class="text-blue-400 hover:underline">зарегистрируйтесь</a>, чтобы начать работу.
+      </p>
+    </div>
 
-        <h2>Проекты</h2>
-        <a href="{{ url_for('create_project') }}" class="btn">+ Создать проект</a>
+  {% else %}
+    <!-- Для авторизованных -->
+    <div class="space-y-6">
+      <div>
+        <h1 class="text-3xl font-bold text-white">👋 Привет, {{ current_user.username }}!</h1>
+        <p class="text-slate-400 text-sm">
+          🧑‍🤝‍🧑 Ваша команда: 
+          {{ current_user.team.name if current_user.team else "Не состоит в команде" }}
+        </p>
+      </div>
 
-        <!-- Список проектов -->
-        <ul class="project-list">
-            {% for project in projects %}
-            <li>
-                <h3><a href="{{ url_for('project_detail', project_id=project.id) }}">{{ project.name }}</a></h3>
-                <p>{{ project.description | default("Описание отсутствует", true) }}</p>
-                <a href="{{ url_for('delete_project', project_id=project.id) }}" class="delete-btn">Удалить</a>
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-white">📁 Проекты</h2>
+        <a href="{{ url_for('create_project') }}"
+           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+          + Создать проект
+        </a>
+      </div>
+
+      {% if projects %}
+        <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for project in projects %}
+            <li class="bg-slate-800 rounded-lg p-4 space-y-2 shadow hover:shadow-lg transition">
+              <h3 class="text-lg font-bold text-white">
+                <a href="{{ url_for('project_detail', project_id=project.id) }}" class="hover:text-blue-400">
+                  {{ project.name }}
+                </a>
+              </h3>
+              <p class="text-sm text-slate-400">
+                {{ project.description | default("Описание отсутствует", true) }}
+              </p>
+              <a href="{{ url_for('delete_project', project_id=project.id) }}"
+                 class="text-red-500 text-sm hover:underline">
+                Удалить
+              </a>
             </li>
-            {% endfor %}
+          {% endfor %}
         </ul>
-    {% endif %}
+      {% else %}
+        <p class="text-slate-400">У вас пока нет проектов. Создайте первый, чтобы начать!</p>
+      {% endif %}
+    </div>
+  {% endif %}
 </div>
 {% endblock %}
