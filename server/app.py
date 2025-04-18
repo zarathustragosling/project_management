@@ -9,14 +9,15 @@ import re
 from markupsafe import Markup, escape
 from markdown import markdown
 from datetime import date
-
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+import sqlite3
 
 # Инициализация приложения
 app = Flask(__name__, template_folder="../templates", static_folder="../static")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../project_management.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'supersecretkey'
-
 
 
 
@@ -311,6 +312,8 @@ def task_detail(task_id):
 @app.route('/reports', methods=['GET', 'POST'])
 @login_required
 def reports():
+    if not current_user.team_id:
+        return redirect(url_for('edit_team'))
     if request.method == 'POST':
         project_id = request.form['project_id']
         file = request.files['report_file']
@@ -340,6 +343,8 @@ def view_report(report_id):
 @app.route('/charts')
 @login_required
 def charts():
+    if not current_user.team_id:
+        return redirect(url_for('edit_team'))
     projects = Project.query.filter_by(team_id=current_user.team_id).all()
     return render_template('charts.html', projects=projects)
 
@@ -348,10 +353,13 @@ def charts():
 @app.route('/')
 def home():
     if current_user.is_authenticated:
-        projects = Project.query.all()  
+        if not current_user.team_id:
+            return redirect(url_for('edit_team'))
+        projects = Project.query.filter_by(team_id=current_user.team_id).all()
         return render_template('index.html', projects=projects)
-    else:
-        return render_template('index.html')
+    return render_template('index.html')
+
+
 
 @app.route('/edit_team', methods=['GET', 'POST'])
 @login_required
@@ -431,6 +439,12 @@ def debug():
 @app.route('/task_creator', methods=['GET', 'POST'])
 @login_required
 def task_creator():
+    if not current_user.team:
+        return redirect(url_for("edit_team"))
+    
+    team_projects = Project.query.filter_by(team_id=current_user.team.id).all()
+    users = current_user.team.users if current_user.team else []
+
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         description = request.form.get('description', '').strip()
@@ -468,7 +482,7 @@ def task_creator():
     projects = Project.query.all()
     users = User.query.filter_by(team_id=current_user.team_id).all()
     current_date = date.today().strftime('%Y-%m-%d')
-    return render_template('task_creator.html', projects=projects, users=users, is_edit=False, current_date=current_date)
+    return render_template('task_creator.html', team_projects=team_projects, users=users, is_edit=False, current_date=current_date)
 
 
 
@@ -477,13 +491,21 @@ def task_creator():
 def edit_task(task_id):
     task = Task.query.get_or_404(task_id)
 
+    # 🔒 Только автор задачи может редактировать
+    if task.created_by != current_user.id:
+        abort(403)
+
     if request.method == 'POST':
         task.title = request.form.get('title', '').strip()
-        task.description = request.form.get('description', None)
+        task.description = request.form.get('description', '').strip()
         task.priority = request.form.get('priority', 'Средний')
         task.status = TaskStatus(request.form.get('status'))
-        task.project_id = int(request.form.get('project_id'))
-        task.assigned_to = int(request.form.get('assigned_to')) if request.form.get('assigned_to') else None
+
+        # ❌ Не трогаем project_id при редактировании
+
+        assigned_to = request.form.get('assigned_to')
+        task.assigned_to = int(assigned_to) if assigned_to else None
+
         deadline = request.form.get('deadline')
         task.deadline = datetime.strptime(deadline, '%Y-%m-%d') if deadline else None
 
@@ -495,19 +517,39 @@ def edit_task(task_id):
         flash("Задача успешно обновлена!", "success")
         return redirect(url_for('kanban'))
 
+    # 👥 Только пользователи текущей команды
     projects = Project.query.filter_by(team_id=current_user.team_id).all()
     users = User.query.filter_by(team_id=current_user.team_id).all()
     current_date = task.created_at.strftime('%Y-%m-%d') if task.created_at else date.today().strftime('%Y-%m-%d')
 
-    return render_template('task_creator.html', task=task, projects=projects, users=users, is_edit=True, current_date=current_date)
+    return render_template(
+        'task_creator.html',
+        task=task,
+        projects=projects,
+        users=users,
+        is_edit=True,
+        current_date=current_date
+    )
 
-
-@app.route('/delete_task/<int:task_id>')
+@app.route('/delete_task/<int:task_id>', methods=["POST"])
+@login_required
 def delete_task(task_id):
-    task = Task.query.get(task_id)
+    task = Task.query.get_or_404(task_id)
+
+    if task.created_by != current_user.id:
+        abort(403)
+
+    # Удаляем комментарии вручную
+    Comment.query.filter_by(task_id=task.id).delete()
+
+    # Теперь можно удалить задачу
     db.session.delete(task)
     db.session.commit()
+
+    flash("Задача удалена.", "success")
     return redirect(url_for('kanban'))
+
+
     
 
 
@@ -583,25 +625,39 @@ def add_comment(task_id):
 @app.route('/projects', methods=['GET', 'POST'])
 @login_required
 def project_list():
+    # Если пользователь без команды — редирект на выбор
+    if not current_user.team:
+        return redirect(url_for('edit_team'))
+
+    # Создание проекта (POST)
     if request.method == 'POST':
         name = request.form.get('name')
-        description = request.form.get('description')
-        team_id = current_user.team_id
-
-        if not name or not team_id:
-            flash("Название и команда обязательны.", "danger")
+        description = request.form.get('description', '')
+        if name:
+            new_project = Project(name=name, description=description, team_id=current_user.team.id)
+            db.session.add(new_project)
+            db.session.commit()
             return redirect(url_for('project_list'))
 
-        new_project = Project(name=name, description=description, team_id=team_id)
-        db.session.add(new_project)
-        db.session.commit()
+    # Фильтрация и сортировка (GET)
+    q = request.args.get('q', '', type=str).strip()
+    sort = request.args.get('sort', 'newest')
 
-        flash("Проект создан!", "success")
-        return redirect(url_for('project_list'))
+    query = Project.query.filter_by(team_id=current_user.team.id)
 
-    # Показываем только проекты текущей команды
-    projects = Project.query.filter_by(team_id=current_user.team_id).all()
+    if q:
+        query = query.filter(Project.name.ilike(f'%{q}%'))
+
+    if sort == 'name':
+        query = query.order_by(Project.name.asc())
+    elif sort == 'oldest':
+        query = query.order_by(Project.id.asc())
+    else:  # newest
+        query = query.order_by(Project.id.desc())
+
+    projects = query.all()
     return render_template('projects.html', projects=projects)
+
 
 
     

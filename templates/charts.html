@@ -2,24 +2,116 @@
 {% block title %}Диаграмма Ганта{% endblock %}
 
 {% block content %}
-<div class="container space-y-6">
-  <h1 class="text-2xl font-bold mb-4">📊 Диаграмма Ганта</h1>
+<div class="max-w-7xl mx-auto px-4 py-8 space-y-8">
 
-  <div class="flex gap-4 mb-4">
-    <label for="projectSelect" class="font-semibold">Выберите проект:</label>
-    <select id="projectSelect" class="bg-gray-800 text-white border border-gray-600 rounded p-2">
-      {% for project in projects %}
-        <option value="{{ project.id }}">{{ project.name }}</option>
-      {% endfor %}
-    </select>
+  <!-- Заголовок -->
+  <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+    <h1 class="text-3xl font-bold text-white">📊 Диаграмма Ганта</h1>
+
+    <div class="flex items-center gap-3">
+      <label for="projectSelect" class="text-white text-sm font-medium">Выберите проект:</label>
+      <select id="projectSelect"
+              class="bg-slate-800 text-white border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        {% for project in projects %}
+          <option value="{{ project.id }}">{{ project.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
   </div>
 
-  <div id="gantt-container" class="bg-gray-900 rounded-lg p-4 shadow-md overflow-x-auto" style="min-height: 500px;"></div>
+  <!-- Контейнер диаграммы -->
+  <div id="gantt-container"
+       class="rounded-xl bg-slate-900 border border-slate-700 shadow-xl p-4 overflow-x-auto"
+       style="min-height: 500px;"></div>
 </div>
 
-<!-- Vis.js Gantt (Timeline) -->
+<!-- vis.js timeline -->
 <link href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css" rel="stylesheet" />
 <script src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"></script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("gantt-container");
+    const select = document.getElementById("projectSelect");
+    let timeline = null;
+
+    function renderGantt(data) {
+      const groups = new vis.DataSet(data.map((t, index) => ({
+        id: index,
+        content: ''
+      })));
+
+      const items = new vis.DataSet(data.map((t, index) => ({
+        id: t.id,
+        content: `<b>${t.name}</b>`,
+        start: t.start,
+        end: t.end,
+        group: index,
+        className: (t.status || '').replace(/\s+/g, ''),
+        title: `
+          <div>
+            <strong>${t.name}</strong><br/>
+            📅 ${t.start} → ${t.end}<br/>
+            📝 ${t.description || 'Без описания'}
+          </div>`
+      })));
+
+      const now = new Date();
+      const options = {
+        currentTime: now,
+        showCurrentTime: true,
+        stack: false,
+        zoomable: true,
+        moveable: true,
+        editable: false,
+        margin: { item: 20, axis: 40 },
+        orientation: 'top',
+        start: new Date(new Date().setDate(new Date().getDate() - 5)),
+        end: new Date(new Date().setDate(new Date().getDate() + 30)),
+        timeAxis: { scale: 'day', step: 1 }
+      };
+
+      if (timeline) timeline.destroy();
+      timeline = new vis.Timeline(container, items, groups, options);
+    }
+
+    async function loadGantt(projectId) {
+      try {
+        const res = await fetch(`/api/project/${projectId}/gantt`);
+        const data = await res.json();
+        renderGantt(data);
+      } catch (err) {
+        console.error("Ошибка загрузки диаграммы:", err);
+      }
+    }
+
+    select.addEventListener("change", () => loadGantt(select.value));
+    loadGantt(select.value);
+  });
+</script>
+
+<style>
+  .vis-item.ToDo {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+  }
+
+  .vis-item.InProgress {
+    background-color: #2563eb !important;
+    border-color: #3b82f6 !important;
+  }
+
+  .vis-item.Done {
+    background-color: #16a34a !important;
+    border-color: #22c55e !important;
+  }
+
+  .vis-item .vis-item-content {
+    color: white;
+    font-weight: 500;
+  }
+
+
+</style>
 
 {% endblock %}

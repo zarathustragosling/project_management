@@ -2,77 +2,119 @@
 {% block title %}{{ 'Редактировать задачу' if is_edit else 'Создать задачу' }}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="text-2xl font-bold mb-6">{{ 'Редактировать задачу' if is_edit else 'Создание задачи' }}</h1>
+<div class="max-w-3xl mx-auto px-4 py-10">
+  <h1 class="text-3xl font-bold text-white mb-6">
+    {{ '✏️ Редактировать задачу' if is_edit else '🆕 Создание задачи' }}
+  </h1>
 
-    <form method="POST" action="{{ url_for('edit_task', task_id=task.id) if is_edit else url_for('task_creator') }}" class="task-form">
-        <div class="form-group">
-            <label for="title">Название задачи</label>
-            <input type="text" name="title" id="title" value="{{ task.title if is_edit else '' }}" required>
-        </div>
+  <form method="POST"
+        action="{{ url_for('edit_task', task_id=task.id) if is_edit else url_for('task_creator') }}"
+        class="space-y-6 bg-slate-800 p-6 rounded-xl shadow" enctype="multipart/form-data">
 
-        <div class="form-group">
-            <label for="description">Описание</label>
-            <textarea name="description" id="description">{{ task.description if is_edit else '' }}</textarea>
-        </div>
+    <div>
+      <label for="title" class="block text-sm font-medium text-white mb-1">Название</label>
+      <input type="text" name="title" id="title" required
+             value="{{ task.title if is_edit else '' }}"
+             class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-blue-500 focus:outline-none">
+    </div>
 
-        <div class="form-group">
-            <label for="priority">Приоритет</label>
-            <select name="priority" id="priority">
-                <option value="Высокий" {% if is_edit and task.priority == 'Высокий' %}selected{% endif %}>Высокий</option>
-                <option value="Средний" {% if is_edit and task.priority == 'Средний' %}selected{% endif %}>Средний</option>
-                <option value="Низкий" {% if is_edit and task.priority == 'Низкий' %}selected{% endif %}>Низкий</option>
-            </select>
-        </div>
+    <div>
+      <label for="description" class="block text-sm font-medium text-white mb-1">Описание</label>
+      <textarea name="description" id="description" rows="4"
+                class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-blue-500">{{ task.description if is_edit else '' }}</textarea>
+    </div>
 
-        <div class="form-group">
-            <label for="status">Статус</label>
-            <select name="status" id="status">
-                {% for st in ['To Do', 'In Progress', 'Done'] %}
-                    <option value="{{ st }}" {% if is_edit and task.status.value == st %}selected{% endif %}>{{ st }}</option>
-                {% endfor %}
-            </select>
-        </div>
+    <div>
+      <label for="priority" class="block text-sm font-medium text-white mb-1">Приоритет</label>
+      <select name="priority" id="priority"
+              class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+        {% for p in ['Высокий', 'Средний', 'Низкий'] %}
+          <option value="{{ p }}" {% if is_edit and task.priority == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
-        <div class="form-group">
-            <label for="project_id">Проект</label>
-            <select name="project_id" id="project_id" required>
-                {% for project in projects %}
-                    <option value="{{ project.id }}" {% if is_edit and task.project_id == project.id %}selected{% endif %}>
-                        {{ project.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
+    <div>
+      <label for="status" class="block text-sm font-medium text-white mb-1">Статус</label>
+      <select name="status" id="status"
+              class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+        {% for st in ['To Do', 'In Progress', 'Done'] %}
+          <option value="{{ st }}" {% if is_edit and task.status.value == st %}selected{% endif %}>{{ st }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
-        <div class="form-group">
-            <label for="assigned_to">Ответственный</label>
-            <select name="assigned_to" id="assigned_to">
-                <option value="">Не назначен</option>
-                {% for user in users %}
-                    <option value="{{ user.id }}" {% if is_edit and task.assigned_to == user.id %}selected{% endif %}>
-                        {{ user.username }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
+    {% if not is_edit %}
+    <div>
+      <label for="project_id" class="block text-sm font-medium text-white mb-1">Проект</label>
+      <select name="project_id" id="project_id" required
+              class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+        {% for project in team_projects %}
+          <option value="{{ project.id }}">{{ project.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% else %}
+    <div>
+      <label class="block text-sm font-medium text-white mb-1">Проект</label>
+      <p class="p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+        {{ task.project.name }}
+      </p>
+    </div>
+    {% endif %}
 
-        <div class="form-group">
-            <label for="deadline">Крайний срок</label>
-            <input type="date" name="deadline" id="deadline"
-                   value="{{ task.deadline.strftime('%Y-%m-%d') if is_edit and task.deadline else '' }}">
-        </div>
-       
-        <div class="form-group">
-            <label for="created_at">Дата создания</label>
-            <input type="date" name="created_at" id="created_at"
-                   value="{% if is_edit and task.created_at %}{{ task.created_at.strftime('%Y-%m-%d') }}{% else %}{{ current_date }}{% endif %}">
-          </div>
-          
-        
-        <button type="submit" class="btn-primary">
-            {{ 'Сохранить' if is_edit else 'Создать задачу' }}
-        </button>
-    </form>
+    <div>
+      <label for="assigned_to" class="block text-sm font-medium text-white mb-1">Ответственный</label>
+      <select name="assigned_to" id="assigned_to"
+              class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+        <option value="">Не назначен</option>
+        {% for user in users %}
+          <option value="{{ user.id }}" {% if is_edit and task.assigned_to == user.id %}selected{% endif %}>
+            {{ user.username }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label for="deadline" class="block text-sm font-medium text-white mb-1">Дедлайн</label>
+      <input type="date" name="deadline" id="deadline"
+             value="{{ task.deadline.strftime('%Y-%m-%d') if is_edit and task.deadline else '' }}"
+             class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+    </div>
+
+    <div>
+      <label for="created_at" class="block text-sm font-medium text-white mb-1">Дата создания</label>
+      <input type="date" name="created_at" id="created_at"
+             value="{% if is_edit and task.created_at %}{{ task.created_at.strftime('%Y-%m-%d') }}{% else %}{{ current_date }}{% endif %}"
+             class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+    </div>
+
+    <div class="pt-4">
+      <button type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium text-sm transition">
+        {{ '💾 Сохранить изменения' if is_edit else '✅ Создать задачу' }}
+      </button>
+    </div>
+  </form>
 </div>
+
+<script>
+  const assignedSelect = document.getElementById("assigned_to");
+  document.getElementById("project_id")?.addEventListener("change", () => {
+    const pid = project_id.value;
+    assignedSelect.innerHTML = '<option value="">Загрузка...</option>';
+    fetch(`/get_project_users/${pid}`)
+      .then(res => res.json())
+      .then(users => {
+        assignedSelect.innerHTML = '<option value="">Не назначен</option>';
+        users.forEach(u => {
+          const opt = document.createElement("option");
+          opt.value = u.id;
+          opt.textContent = u.username;
+          assignedSelect.appendChild(opt);
+        });
+      });
+  });
+</script>
 {% endblock %}

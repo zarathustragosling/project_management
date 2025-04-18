@@ -35,8 +35,19 @@
     </div>
 
     {% if current_user.id == task.created_by %}
-    <a href="{{ url_for('edit_task', task_id=task.id) }}" class="btn mt-4">✏️ Редактировать</a>
-    {% endif %}
+    <div class="flex gap-4 mt-4">
+      <a href="{{ url_for('edit_task', task_id=task.id) }}" class="bg-blue-600 hover:bg-blue-900 text-white px-4 py-2 rounded-md transition text-sm font-medium">✏️ Редактировать</a>
+  
+      <form method="POST" action="{{ url_for('delete_task', task_id=task.id) }}"
+            onsubmit="return confirm('Вы уверены, что хотите удалить эту задачу?');">
+        <button type="submit"
+                class="bg-red-600 hover:bg-red-900 text-white px-4 py-2 rounded-md transition text-sm font-medium">
+          🗑 Удалить задачу
+        </button>
+      </form>
+    </div>
+  {% endif %}
+  
   </div>
 
   <!-- Comments -->

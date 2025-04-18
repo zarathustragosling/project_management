@@ -1,15 +1,28 @@
 {% extends 'base.html' %}
 
+{% block title %}Вход{% endblock %}
+
 {% block content %}
-<div class="auth-container">
-    <div class="auth-box">
-        <h2>Вход</h2>
-        <form method="POST">
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Пароль" required>
-            <button type="submit">Войти</button>
-        </form>
-        <p>Нет аккаунта? <a href="{{ url_for('register') }}">Регистрация</a></p>
-    </div>
+<div class="flex items-center justify-center min-h-screen bg-gray-900 px-4">
+  <div class="w-full max-w-md bg-slate-800 p-8 rounded-xl shadow-xl space-y-6">
+    <h2 class="text-2xl font-bold text-white text-center">🔐 Вход</h2>
+
+    <form method="POST" class="space-y-4">
+      <input type="email" name="email" placeholder="Email" required
+             class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-blue-500">
+      <input type="password" name="password" placeholder="Пароль" required
+             class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-blue-500">
+
+      <button type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition">
+        🚀 Войти
+      </button>
+    </form>
+
+    <p class="text-sm text-center text-gray-400">
+      Нет аккаунта?
+      <a href="{{ url_for('register') }}" class="text-blue-400 hover:underline">Регистрация</a>
+    </p>
+  </div>
 </div>
 {% endblock %}

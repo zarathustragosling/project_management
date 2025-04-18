@@ -1,23 +1,41 @@
 {% extends 'base.html' %}
 
+{% block title %}Регистрация{% endblock %}
+
 {% block content %}
-<div class="auth-container">
-    <div class="auth-box">
-        <h2>Регистрация</h2>
-        <form method="POST">
-            <input type="text" name="username" placeholder="Имя пользователя" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Пароль" required>
-            <label for="team_id">Команда:</label>
-            <select id="team_id" name="team_id">
-                <option value="">-- Выберите команду --</option>
-                {% for team in teams %}
-                <option value="{{ team.id }}">{{ team.name }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit">Зарегистрироваться</button>
-        </form>
-        <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
-    </div>
+<div class="flex items-center justify-center min-h-screen bg-gray-900 px-4">
+  <div class="w-full max-w-md bg-slate-800 p-8 rounded-xl shadow-xl space-y-6">
+    <h2 class="text-2xl font-bold text-white text-center">📝 Регистрация</h2>
+
+    <form method="POST" class="space-y-4">
+      <input type="text" name="username" placeholder="Имя пользователя" required
+             class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-blue-500">
+      <input type="email" name="email" placeholder="Email" required
+             class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-blue-500">
+      <input type="password" name="password" placeholder="Пароль" required
+             class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-blue-500">
+
+      <div>
+        <label for="team_id" class="block text-sm font-medium text-white mb-1">Команда</label>
+        <select id="team_id" name="team_id"
+                class="w-full px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+          <option value="">-- Выберите команду --</option>
+          {% for team in teams %}
+          <option value="{{ team.id }}">{{ team.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit"
+              class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg transition">
+        ✅ Зарегистрироваться
+      </button>
+    </form>
+
+    <p class="text-sm text-center text-gray-400">
+      Уже есть аккаунт?
+      <a href="{{ url_for('login') }}" class="text-blue-400 hover:underline">Войти</a>
+    </p>
+  </div>
 </div>
 {% endblock %}

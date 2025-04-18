@@ -3,10 +3,7 @@
 
 
     
-   
-
-
-
+  
 
     function highlightMentions(text) {
         return text.replace(/<@(\d+):([\wА-яёЁ.-]+)>/g, (_, id, name) =>
@@ -217,69 +214,7 @@ document.querySelectorAll('.comment-box[data-is-reply="1"]').forEach(reply => {
   });
 
   
-    // === CHARTS: GANTT ===
-    const container = document.getElementById("gantt-container");
-    const select = document.getElementById("projectSelect");
-    let timeline = null;
-
-    function renderGantt(data) {
-        // Создаём группы — каждая задача в своей дорожке
-        const groups = new vis.DataSet(data.map((t, index) => ({
-          id: index,
-          content: ''
-        })));
-      
-        // Каждая задача — item, привязанная к своей группе
-        const items = new vis.DataSet(data.map((t, index) => ({
-          id: t.id,
-          content: `<b>${t.name}</b>`,
-          start: t.start,
-          end: t.end,
-          group: index, // 👈 Привязка к дорожке
-          className: t.status || '',
-          title: `
-            <div>
-              <strong>${t.name}</strong><br/>
-              📅 ${t.start} → ${t.end}<br/>
-              📝 ${t.description || 'Без описания'}
-            </div>
-          `
-        })));
-      
-        const now = new Date();
-        const options = {
-          currentTime: now,
-          showCurrentTime: true,
-          stack: false, // важно: stack = false → группировка работает
-          zoomable: true,
-          moveable: true,
-          editable: false,
-          margin: { item: 20, axis: 40 },
-          orientation: 'top',
-          start: new Date(new Date().setDate(new Date().getDate() - 5)),
-          end: new Date(new Date().setDate(new Date().getDate() + 30)),
-          timeAxis: { scale: 'day', step: 1 }
-        };
-      
-        if (timeline) timeline.destroy();
-        timeline = new vis.Timeline(container, items, groups, options); // 👈 groups сюда
-      }
-      
-
-    async function loadGantt(projectId) {
-      try {
-        const res = await fetch(`/api/project/${projectId}/gantt`);
-        const data = await res.json();
-        renderGantt(data);
-      } catch (err) {
-        console.error("Ошибка загрузки диаграммы:", err);
-      }
-    }
-
-    select.addEventListener("change", () => loadGantt(select.value));
-    loadGantt(select.value); // первичная загрузка
-
-
+    
 
 });
 

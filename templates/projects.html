@@ -1,29 +1,69 @@
 {% extends 'base.html' %}
-
 {% block title %}Проекты{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Список проектов</h1>
-    
-
-    <form action="{{ url_for('project_list') }}" method="POST">
-
-        <input type="text" name="name" placeholder="Название проекта" required>
-        <textarea name="description" placeholder="Описание проекта"></textarea>
-        <button type="submit">Добавить проект</button>
+<div class="max-w-6xl mx-auto px-4 py-10 space-y-10">
+  <div class="flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-white">📂 Все проекты команды</h1>
+    <form method="POST" action="{{ url_for('project_list') }}" class="flex gap-2">
+      <input type="text" name="name" placeholder="Название..." required
+             class="p-2 rounded-lg bg-slate-900 text-white border border-slate-700 w-48">
+      <input type="text" name="description" placeholder="Описание..."
+             class="p-2 rounded-lg bg-slate-900 text-white border border-slate-700 w-64">
+      <button type="submit"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition">
+        ➕ Добавить
+      </button>
     </form>
+  </div>
 
+  <!-- Фильтры -->
+  <div class="bg-slate-800 p-4 rounded-lg shadow space-y-4">
+    <form method="GET" action="{{ url_for('project_list') }}" class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+      <div>
+        <label class="block text-sm text-slate-300 mb-1">Поиск по названию:</label>
+        <input type="text" name="q" value="{{ request.args.get('q', '') }}"
+               class="p-2 rounded bg-slate-900 text-white border border-slate-700 w-64">
+      </div>
+      <div>
+        <label class="block text-sm text-slate-300 mb-1">Сортировать:</label>
+        <select name="sort" class="p-2 rounded bg-slate-900 text-white border border-slate-700">
+          <option value="newest">📅 Сначала новые</option>
+          <option value="oldest">📆 Сначала старые</option>
+          <option value="name">🔤 По алфавиту</option>
+        </select>
+      </div>
+      <button type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition">
+        🔍 Применить
+      </button>
+    </form>
+  </div>
 
-    <ul class="project-list">
-        {% for project in projects %}
-        <li>
-            <h3><a href="{{ url_for('project_detail', project_id=project.id) }}">{{ project.name }}</h3>
-            <p>{{ project.description }}</p>
-            <a href="{{ url_for('delete_project', project_id=project.id) }}" class="delete-btn">Удалить</a>
+  {% if projects %}
+    <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for project in projects %}
+        <li class="bg-slate-800 rounded-lg p-4 space-y-2 shadow hover:shadow-lg transition">
+          <h3 class="text-lg font-bold text-white">
+            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="hover:text-blue-400">
+              {{ project.name }}
+            </a>
+          </h3>
+          <p class="text-sm text-slate-400">
+            {{ project.description | default("Описание отсутствует", true) }}
+          </p>
+          <div class="flex justify-between items-center pt-2">
+            <span class="text-xs text-slate-500">ID: {{ project.id }}</span>
+            <a href="{{ url_for('delete_project', project_id=project.id) }}"
+               class="text-red-500 text-sm hover:underline">
+              🗑 Удалить
+            </a>
+          </div>
         </li>
-        {% endfor %}
+      {% endfor %}
     </ul>
+  {% else %}
+    <p class="text-slate-400">Проектов пока нет. Вы можете добавить их выше.</p>
+  {% endif %}
 </div>
 {% endblock %}
-
