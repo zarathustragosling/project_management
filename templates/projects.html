@@ -5,7 +5,7 @@
 <div class="max-w-6xl mx-auto px-4 py-10 space-y-10">
   <div class="flex justify-between items-center">
     <h1 class="text-3xl font-bold text-white">📂 Все проекты команды</h1>
-    <form method="POST" action="{{ url_for('project_list') }}" class="flex gap-2">
+    <form method="POST" action="{{ url_for('project.project_list') }}" class="flex gap-2">
       <input type="text" name="name" placeholder="Название..." required
              class="p-2 rounded-lg bg-slate-900 text-white border border-slate-700 w-48">
       <input type="text" name="description" placeholder="Описание..."
@@ -19,7 +19,7 @@
 
   <!-- Фильтры -->
   <div class="bg-slate-800 p-4 rounded-lg shadow space-y-4">
-    <form method="GET" action="{{ url_for('project_list') }}" class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+    <form method="GET" action="{{ url_for('project.project_list') }}" class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
       <div>
         <label class="block text-sm text-slate-300 mb-1">Поиск по названию:</label>
         <input type="text" name="q" value="{{ request.args.get('q', '') }}"
@@ -45,7 +45,7 @@
       {% for project in projects %}
         <li class="bg-slate-800 rounded-lg p-4 space-y-2 shadow hover:shadow-lg transition">
           <h3 class="text-lg font-bold text-white">
-            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="hover:text-blue-400">
+            <a href="{{ url_for('project.project_detail', project_id=project.id) }}" class="hover:text-blue-400">
               {{ project.name }}
             </a>
           </h3>
@@ -54,7 +54,7 @@
           </p>
           <div class="flex justify-between items-center pt-2">
             <span class="text-xs text-slate-500">ID: {{ project.id }}</span>
-            <a href="{{ url_for('delete_project', project_id=project.id) }}"
+            <a href="{{ url_for('project.delete_project', project_id=project.id) }}"
                class="text-red-500 text-sm hover:underline">
               🗑 Удалить
             </a>

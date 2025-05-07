@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Редактирование команды{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto mt-10 space-y-6">
+  <h1 class="text-2xl font-bold">Редактировать команду</h1>
+
+  <form method="POST" class="space-y-4">
+    <input type="text" name="name" value="{{ team.name }}" class="input w-full" placeholder="Название команды" required>
+    <input type="text" name="avatar_url" value="{{ team.avatar_url }}" class="input w-full" placeholder="URL аватара">
+    <textarea name="description" rows="3" class="input w-full" placeholder="Описание">{{ team.description }}</textarea>
+
+    <button type="submit" class="btn btn-blue">💾 Сохранить изменения</button>
+  </form>
+</div>
+{% endblock %}

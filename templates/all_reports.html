@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Все отчеты{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-10">
+
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-white">📊 Все отчеты</h1>
+    <a href="{{ url_for('report.reports') }}" class="text-blue-400 hover:text-blue-300 flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      <span>Назад к генерации отчетов</span>
+    </a>
+  </div>
+
+  <!-- Фильтры и поиск -->
+  <div class="bg-slate-800 p-6 rounded-xl shadow-lg mb-8">
+    <form method="GET" action="{{ url_for('report.all_reports') }}" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Поиск по проекту -->
+        <div>
+          <label for="search" class="block text-sm font-medium text-gray-300 mb-1">Поиск по названию проекта</label>
+          <input type="text" name="search" id="search" value="{{ search_query }}" 
+                 class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        
+        <!-- Сортировка -->
+        <div>
+          <label for="sort_by" class="block text-sm font-medium text-gray-300 mb-1">Сортировка</label>
+          <select name="sort_by" id="sort_by" 
+                  class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>По дате (сначала новые)</option>
+            <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>По дате (сначала старые)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="flex justify-end">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition font-medium">
+          Применить фильтры
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Список отчетов -->
+  <div class="bg-slate-800 p-6 rounded-xl shadow-lg">
+    <h2 class="text-xl font-semibold text-white mb-4">Результаты</h2>
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-700">
+        <thead>
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Проект</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Дата создания</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Действия</th>
+          </tr>
+        </thead>
+        <tbody class="bg-slate-700 divide-y divide-gray-600">
+          {% for report in reports %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-white">
+              <a href="{{ url_for('project.project_detail', project_id=report.project_id) }}" class="text-blue-400 hover:text-blue-300">
+                {{ report.project.name }}
+              </a>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ report.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-white space-x-2">
+              <a href="{{ url_for('report.view_report', report_id=report.id) }}" class="text-blue-400 hover:text-blue-300">Просмотр</a>
+              <form method="POST" action="{{ url_for('report.delete_report', report_id=report.id) }}" class="inline">
+                <button type="submit" class="text-red-400 hover:text-red-300" onclick="return confirm('Вы уверены, что хотите удалить этот отчет?')">Удалить</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-300">Нет доступных отчетов</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

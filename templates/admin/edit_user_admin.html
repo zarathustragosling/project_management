@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Редактирование пользователя{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-slate-800 rounded-lg shadow-md p-6 max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6 text-white">Редактирование пользователя</h1>
+        
+        <!-- Выпадающий список пользователей -->
+        <div class="mb-6">
+            <label for="user_select" class="block text-white font-medium mb-2">Выберите пользователя</label>
+            <select id="user_select" class="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white" onchange="if(this.value) window.location.href = '/admin/edit_user/' + this.value;">
+                <option value="">-- Выберите пользователя --</option>
+                {% for system_user in all_users %}
+                    <option value="{{ system_user.id }}" {% if user and user.id == system_user.id %}selected{% endif %}>
+                        {{ system_user.username }} ({{ system_user.email }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        {% if user %}
+        <form method="POST" action="{{ url_for('admin.admin_edit_user', user_id=user.id) }}" enctype="multipart/form-data">
+            <div class="mb-4">
+                <label for="username" class="block text-white font-medium mb-2">Имя пользователя</label>
+                <input type="text" id="username" name="username" value="{{ user.username }}" 
+                       class="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white" required>
+            </div>
+            
+            <div class="mb-4">
+                <label for="email" class="block text-white font-medium mb-2">Email</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" 
+                       class="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white" required>
+            </div>
+            
+            <div class="mb-4">
+                <label for="bio" class="block text-white font-medium mb-2">Описание</label>
+                <textarea id="bio" name="bio" rows="3" 
+                       class="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">{{ user.description }}</textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label for="avatar" class="block text-white font-medium mb-2">Аватар</label>
+                {% if user.avatar %}
+                <div class="mb-2">
+                    <img src="{{ user.avatar }}" alt="Аватар пользователя" class="w-20 h-20 object-cover rounded-full">
+                </div>
+                {% endif %}
+                <input type="file" id="avatar" name="avatar" accept="image/*" 
+                       class="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white">
+            </div>
+            
+            <div class="mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" name="is_admin" class="form-checkbox h-5 w-5 text-blue-600" 
+                           {% if user.is_admin %}checked{% endif %}>
+                    <span class="ml-2 text-white">Администратор</span>
+                </label>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-white font-medium mb-2">Команда</label>
+                <div class="text-gray-300">
+                    {% if user.team %}
+                        {{ user.team.name }}
+                    {% else %}
+                        Не состоит в команде
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex justify-between mt-6">
+                <a href="{{ url_for('admin.system_admin_panel') }}" 
+                   class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition">
+                    Отмена
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    Сохранить
+                </button>
+            </div>
+        </form>
+        
+        <div class="mt-8 pt-6 border-t border-gray-700">
+            <h2 class="text-xl font-semibold text-red-500 mb-4">Опасная зона</h2>
+            <form method="POST" action="{{ url_for('admin.admin_delete_user', user_id=user.id) }}" 
+                  onsubmit="return confirm('Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить.');">
+                <button type="submit" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                    Удалить пользователя
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <p class="text-gray-300">Выберите пользователя из списка выше для редактирования</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

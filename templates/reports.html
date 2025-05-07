@@ -1,41 +1,93 @@
 {% extends 'base.html' %}
 
-{% block title %}Создание отчета{% endblock %}
+{% block title %}Генерация отчета{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-10">
+<div class="max-w-4xl mx-auto px-4 py-10">
 
-  <h1 class="text-3xl font-bold text-white mb-6">📑 Загрузка отчета</h1>
+  <h1 class="text-3xl font-bold text-white mb-6">📊 Генерация отчетов</h1>
 
-  <form method="POST" enctype="multipart/form-data" class="bg-slate-800 p-6 rounded-xl space-y-6 shadow-lg">
+  <div class="bg-slate-800 p-6 rounded-xl space-y-6 shadow-lg mb-8">
+    <h2 class="text-xl font-semibold text-white">Выберите проект для создания отчета</h2>
+    <p class="text-gray-300">Система автоматически сгенерирует PDF-отчет со всей необходимой информацией о проекте, включая список задач, статистику и диаграмму Ганта.</p>
+    
+    <form action="{{ url_for('report.generate_report', project_id=project_id) if project_id else '#' }}" method="GET" class="mt-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-end gap-4">
+        <div class="w-full sm:w-2/3">
+          <label for="project_id" class="block text-sm font-medium text-gray-300 mb-2">Проект:</label>
+          <select id="project_id" name="project_id" required onchange="updateFormAction(this.value)"
+                  class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">-- Выберите проект --</option>
+            {% for project in projects %}
+              <option value="{{ project.id }}">{{ project.name }}</option>
+            {% endfor %}
+          </select>
+          
+          <script>
+          function updateFormAction(projectId) {
+            const form = document.querySelector('form');
+            if (projectId) {
+              form.action = '{{ url_for("report.generate_report", project_id=0) }}'.replace('0', projectId);
+            } else {
+              form.action = '#';
+            }
+          }
+          </script>
+        </div>
+        <button type="submit" 
+                class="w-full sm:w-auto inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition font-medium">
+          <span class="mr-2">📄</span> Сгенерировать отчет
+        </button>
+      </div>
+    </form>
+  </div>
 
-    <!-- Выбор проекта -->
-    <div>
-      <label for="project_id" class="block mb-2 text-sm font-medium text-white">Проект</label>
-      <select id="project_id" name="project_id" required
-              class="w-full rounded-md bg-gray-900 border border-gray-700 text-white p-2 focus:ring-2 focus:ring-blue-500">
-        <option value="">-- Выберите проект --</option>
-        {% for project in projects %}
-        <option value="{{ project.id }}">{{ project.name }}</option>
-        {% endfor %}
-      </select>
+  <!-- Список последних отчетов -->
+  <div class="bg-slate-800 p-6 rounded-xl shadow-lg">
+    <h2 class="text-xl font-semibold text-white mb-4">Последние отчеты</h2>
+    <div class="flex justify-end mb-4">
+      <a href="{{ url_for('report.all_reports') }}" class="text-blue-400 hover:text-blue-300 flex items-center">
+        <span>Все отчеты</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
     </div>
-
-    <!-- Загрузка файла -->
-    <div>
-      <label for="report_file" class="block mb-2 text-sm font-medium text-white">Файл отчета</label>
-      <input type="file" id="report_file" name="report_file" required
-             class="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4
-                    file:rounded-md file:border-0 file:text-sm file:font-semibold
-                    file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-700">
+        <thead>
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Проект</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Дата создания</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Действия</th>
+          </tr>
+        </thead>
+        <tbody class="bg-slate-700 divide-y divide-gray-600">
+          {% for report in reports %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-white">
+              <a href="{{ url_for('project.project_detail', project_id=report.project_id) }}" class="text-blue-400 hover:text-blue-300">
+                {{ report.project.name }}
+              </a>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ report.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-white space-x-2">
+              <a href="{{ url_for('report.view_report', report_id=report.id) }}" class="text-blue-400 hover:text-blue-300">Просмотр</a>
+              <form method="POST" action="{{ url_for('report.delete_report', report_id=report.id) }}" class="inline">
+                <button type="submit" class="text-red-400 hover:text-red-300" onclick="return confirm('Вы уверены, что хотите удалить этот отчет?')">Удалить</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-300">Нет доступных отчетов</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-
-    <!-- Кнопка отправки -->
-    <button type="submit"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition font-medium">
-      📤 Загрузить
-    </button>
-  </form>
+  </div>
 
 </div>
 {% endblock %}

@@ -2,49 +2,105 @@
 {% block title %}Команда: {{ team.name }}{% endblock %}
 
 {% block content %}
+<div class="max-w-5xl mx-auto space-y-10">
 
-<div class="team-info flex items-center gap-4 mb-6">
+  <!-- 👥 Команда -->
+  <div class="team-info flex items-center gap-4 mb-6">
     {% if team.avatar_url %}
-        <img src="{{ team.avatar_url }}" alt="Аватар команды" class="rounded-full w-20 h-20 object-cover border border-gray-400">
+      <img src="{{ team.avatar_url }}" alt="Аватар команды"
+           class="rounded-full w-20 h-20 object-cover border border-gray-400">
     {% endif %}
     <div>
-        <h1 class="text-3xl font-bold">{{ team.name }}</h1>
-        {% if team.description %}
+      <h1 class="text-3xl font-bold">{{ team.name }}</h1>
+      {% if team.description %}
         <p class="text-gray-300 mt-1">{{ team.description }}</p>
-        {% endif %}
+      {% endif %}
     </div>
-</div>
+    <div class="ml-auto flex gap-2">
+      {% if current_user.is_teamlead() %}
+  <a href="{{ url_for('team.edit_team') }}" class="btn">Редактировать команду</a>
+{% endif %}
 
+      <form method="POST" action="{{ url_for('team.leave_team') }}">
+        <button class="btn btn-danger">🚪 Выйти</button>
+      </form>
+    </div>
+  </div>
 
-<div class="container">
-  <h1>Команда: {{ team.name }}</h1>
-  <form method="POST" action="{{ url_for('leave_team') }}">
-    <button class="btn btn-danger">Выйти из команды</button>
-  </form>
-  <h2>Участники</h2>
-  <ul class="project-list">
-    {% for user in team.users %}
-      <li>
-        {{ user.username }} — {{ user.email }}
-        <a href="{{ url_for('remove_member', team_id=team.id, user_id=user.id) }}" class="delete-btn">Удалить</a>
-      </li>
-    {% endfor %}
-  </ul>
+  <!-- 📨 Код приглашения -->
+  <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
+    <h2 class="text-lg font-semibold text-white">📨 Код приглашения</h2>
+    <div class="flex gap-3 items-center">
+      <input id="inviteCode" type="text" value="{{ team.invite_code }}" readonly
+             class="w-full bg-gray-900 text-white px-4 py-2 rounded border border-gray-600">
+      <button type="button" onclick="copyInviteCode()" id="copyButton" class="btn btn-sm">📋 Копировать</button>
+    </div>
+    <p class="text-sm text-slate-400">Отправьте код другим, чтобы они присоединились к вашей команде.</p>
+  </div>
 
-  <h2>Добавить участника</h2>
-  <form action="{{ url_for('add_member', team_id=team.id) }}" method="POST">
-    <select name="user_id" class="form-group">
-      {% for user in all_users %}
-        {% if user.team_id != team.id %}
-          <option value="{{ user.id }}">{{ user.username }}</option>
-        {% endif %}
+  <!-- 👤 Участники -->
+  <div>
+    <h2 class="text-xl font-semibold text-white mb-3">Участники</h2>
+    <ul class="space-y-2">
+      {% for user in team.users %}
+        <li class="bg-slate-700 p-3 rounded flex justify-between items-center gap-4">
+          <!-- Аватар -->
+          <img src="{{ user.avatar or url_for('static', filename='default_avatar.png') }}"
+               class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+          
+          <!-- Имя пользователя -->
+          <a href="{{ url_for('user.view_profile', user_id=user.id) }}" 
+             class="text-white hover:text-blue-400 flex-1 min-w-0 truncate">
+              {{ user.username }}
+          </a>
+          
+          <!-- Роль -->
+          <p class="text-xs text-slate-400 w-24 text-center">{{ user.role.name }}</p>
+          
+          <!-- Кнопка удаления -->
+          {% if current_user.is_teamlead() and user.id != current_user.id %}
+          <a href="{{ url_for('team.remove_member', team_id=team.id, user_id=user.id) }}"
+             class="text-red-400 hover:underline text-sm flex-shrink-0">
+             Удалить
+          </a>
+          {% endif %}
+        </li>
       {% endfor %}
-    </select>
-    <button class="btn">Добавить</button>
-
-
-    
-
-  </form>
+    </ul>
+  </div>
 </div>
+
+<script>
+  async function copyInviteCode() {
+    const input = document.getElementById("inviteCode");
+    const button = document.getElementById("copyButton");
+    
+    try {
+      await navigator.clipboard.writeText(input.value);
+      
+      // Визуальное подтверждение
+      button.innerHTML = '✓ Скопировано';
+      button.classList.add('bg-green-600');
+      button.classList.remove('bg-blue-600');
+      
+      // Возвращаем исходный вид через 2 секунды
+      setTimeout(() => {
+        button.innerHTML = '📋 Копировать';
+        button.classList.add('bg-blue-600');
+        button.classList.remove('bg-green-600');
+      }, 2000);
+      
+    } catch (err) {
+      console.error('Ошибка копирования: ', err);
+      // Альтернативный метод для старых браузеров
+      input.select();
+      document.execCommand('copy');
+      
+      button.innerHTML = '✓ Скопировано (старый метод)';
+      setTimeout(() => {
+        button.innerHTML = '📋 Копировать';
+      }, 2000);
+    }
+  }
+</script>
 {% endblock %}

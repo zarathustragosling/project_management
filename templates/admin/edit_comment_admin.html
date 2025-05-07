@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Редактирование комментария{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 py-8">
+  <h1 class="text-2xl font-bold text-white mb-6">✏️ Редактирование комментария</h1>
+  
+  <div class="bg-slate-800 p-6 rounded-lg shadow-lg">
+    <form method="POST" action="{{ url_for('admin.admin_edit_comment', comment_id=comment.id) }}">
+      <div class="mb-4">
+        <label for="content" class="block text-sm font-medium text-gray-300 mb-2">Содержание комментария</label>
+        <textarea 
+          id="content" 
+          name="content" 
+          rows="6" 
+          class="w-full p-3 rounded bg-gray-900 text-white border border-gray-700 focus:border-blue-400"
+          required
+        >{{ comment.content }}</textarea>
+      </div>
+      
+      <div class="flex justify-between mt-6">
+        <a href="{{ url_for('admin.system_admin_panel') }}" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition">Отмена</a>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition">Сохранить</button>
+      </div>
+    </form>
+  </div>
+  
+  <div class="mt-6 text-sm text-gray-400">
+    <p>Автор: <strong>{{ comment.author.username }}</strong></p>
+    <p>Создан: {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
+    {% if comment.task %}
+    <p>Задача: <a href="{{ url_for('task.task_detail', task_id=comment.task.id) }}" class="text-blue-400 hover:underline">{{ comment.task.title }}</a></p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

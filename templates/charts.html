@@ -11,7 +11,7 @@
     <div class="flex items-center gap-3">
       <label for="projectSelect" class="text-white text-sm font-medium">Выберите проект:</label>
       <select id="projectSelect"
-              class="bg-slate-800 text-white border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              class="bg-slate-800 text-white border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
         {% for project in projects %}
           <option value="{{ project.id }}">{{ project.name }}</option>
         {% endfor %}
@@ -19,10 +19,35 @@
     </div>
   </div>
 
+  <!-- Индикатор загрузки -->
+  <div id="loading-indicator" class="hidden flex justify-center items-center py-10">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-400"></div>
+  </div>
+
   <!-- Контейнер диаграммы -->
   <div id="gantt-container"
-       class="rounded-xl bg-slate-900 border border-slate-700 shadow-xl p-4 overflow-x-auto"
+       class="rounded-xl bg-slate-900 border border-slate-700 shadow-xl p-4 overflow-x-auto transition-all duration-300"
        style="min-height: 500px;"></div>
+       
+  <!-- Легенда -->
+  <div class="flex flex-wrap gap-4 justify-center mt-4">
+    <div class="flex items-center gap-2">
+      <div class="w-4 h-4 rounded bg-red-600"></div>
+      <span class="text-sm text-gray-300">Высокий приоритет</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="w-4 h-4 rounded bg-amber-500"></div>
+      <span class="text-sm text-gray-300">Средний приоритет</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="w-4 h-4 rounded bg-green-600"></div>
+      <span class="text-sm text-gray-300">Низкий приоритет</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="w-4 h-4 rounded bg-blue-500"></div>
+      <span class="text-sm text-gray-300">Текущая дата</span>
+    </div>
+  </div>
 </div>
 
 <!-- vis.js timeline -->
@@ -33,85 +58,322 @@
   document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("gantt-container");
     const select = document.getElementById("projectSelect");
+    const loadingIndicator = document.getElementById("loading-indicator");
     let timeline = null;
 
+    function showLoading() {
+      loadingIndicator.classList.remove('hidden');
+      container.classList.add('opacity-50');
+    }
+
+    function hideLoading() {
+      loadingIndicator.classList.add('hidden');
+      container.classList.remove('opacity-50');
+    }
+
     function renderGantt(data) {
-      const groups = new vis.DataSet(data.map((t, index) => ({
-        id: index,
-        content: ''
-      })));
+      const items = new vis.DataSet();
+      const groups = new vis.DataSet();
 
-      const items = new vis.DataSet(data.map((t, index) => ({
-        id: t.id,
-        content: `<b>${t.name}</b>`,
-        start: t.start,
-        end: t.end,
-        group: index,
-        className: (t.status || '').replace(/\s+/g, ''),
-        title: `
-          <div>
-            <strong>${t.name}</strong><br/>
-            📅 ${t.start} → ${t.end}<br/>
-            📝 ${t.description || 'Без описания'}
-          </div>`
-      })));
+      data.forEach((t, index) => {
+        groups.add({ 
+          id: index, 
+          content: `<div class="text-sm text-gray-400 py-1">${t.name}</div>` 
+        });
 
-      const now = new Date();
+        items.add({
+          id: t.id,
+          content: `<div class="gantt-item-content">
+                      <div class="gantt-item-title">${t.name}</div>
+                    </div>`,
+          start: t.start,
+          end: t.end,
+          group: index,
+          className: `priority-${(t.priority || '').toLowerCase()}`,
+          title: `
+            <div class="gantt-tooltip">
+              <div class="gantt-tooltip-title">${t.name}</div>
+              <div class="gantt-tooltip-dates">📅 ${t.start} → ${t.end}</div>
+              <div class="gantt-tooltip-desc">📝 ${t.description || 'Без описания'}</div>
+              <div class="gantt-tooltip-priority">🔥 Приоритет: ${t.priority}</div>
+            </div>`,
+          url: `/task/${t.id}`
+        });
+      });
+
       const options = {
-        currentTime: now,
-        showCurrentTime: true,
         stack: false,
+        showCurrentTime: true,
+        showMajorLabels: true,
+        showMinorLabels: true,
         zoomable: true,
         moveable: true,
         editable: false,
-        margin: { item: 20, axis: 40 },
         orientation: 'top',
+        margin: { item: 20, axis: 40 },
         start: new Date(new Date().setDate(new Date().getDate() - 5)),
         end: new Date(new Date().setDate(new Date().getDate() + 30)),
-        timeAxis: { scale: 'day', step: 1 }
+        timeAxis: { scale: 'day', step: 1 },
+        format: {
+          minorLabels: {
+            day: 'D',
+            hour: 'HH:mm'
+          },
+          majorLabels: {
+            day: 'D MMMM YYYY'
+          }
+        },
+        template: function(item) {
+          return item.content;
+        },
+        // Добавляем настройки для плавности
+        zoomMin: 1000 * 60 * 60 * 24,  // Минимальный масштаб - 1 день
+        zoomMax: 1000 * 60 * 60 * 24 * 31 * 3, // Максимальный масштаб - 3 месяца
+        throttleRedraw: 16, // Ограничение частоты перерисовки (60 FPS)
+        rollingMode: {
+          follow: false // Отключаем автоматическое следование
+        }
       };
 
       if (timeline) timeline.destroy();
       timeline = new vis.Timeline(container, items, groups, options);
+
+      // Анимация появления
+      container.style.opacity = 0;
+      setTimeout(() => {
+        container.style.opacity = 1;
+      }, 100);
+
+      // Переход по клику
+      timeline.on("select", function (props) {
+        const item = items.get(props.items[0]);
+        if (item && item.url) {
+          // Анимация клика
+          const clickEffect = document.createElement('div');
+          clickEffect.className = 'click-effect';
+          clickEffect.style.left = props.event.clientX + 'px';
+          clickEffect.style.top = props.event.clientY + 'px';
+          document.body.appendChild(clickEffect);
+          
+          setTimeout(() => {
+            clickEffect.remove();
+            window.location.href = item.url;
+          }, 300);
+        }
+      });
+      
+      // Добавляем обработчик для предотвращения дёргания при наведении
+      container.addEventListener('mousemove', function(e) {
+        // Предотвращаем всплытие события, чтобы избежать лишних перерисовок
+        e.stopPropagation();
+      }, { passive: true });
+      
+      // Оптимизация прокрутки
+      let scrollTimeout;
+      container.addEventListener('scroll', function() {
+        if (!scrollTimeout) {
+          scrollTimeout = setTimeout(function() {
+            scrollTimeout = null;
+          }, 16); // ~60fps
+        }
+      }, { passive: true });
     }
 
     async function loadGantt(projectId) {
       try {
-        const res = await fetch(`/api/project/${projectId}/gantt`);
+        showLoading();
+        const res = await fetch(`/charts/api/project/${projectId}/gantt`);
         const data = await res.json();
+        hideLoading();
         renderGantt(data);
       } catch (err) {
+        hideLoading();
         console.error("Ошибка загрузки диаграммы:", err);
+        container.innerHTML = `
+          <div class="flex flex-col items-center justify-center h-full py-10">
+            <div class="text-red-500 text-xl mb-2">
+              <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="text-gray-400 text-center">
+              Не удалось загрузить данные диаграммы.<br>
+              Пожалуйста, попробуйте позже.
+            </div>
+          </div>
+        `;
       }
     }
 
-    select.addEventListener("change", () => loadGantt(select.value));
+    select.addEventListener("change", () => {
+      const projectId = select.value;
+      loadGantt(projectId);
+    });
+    
     loadGantt(select.value);
   });
 </script>
 
 <style>
-  .vis-item.ToDo {
-    background-color: #1e293b !important;
-    border-color: #475569 !important;
+  /* Основные стили для диаграммы */
+  .vis-timeline {
+    border: none !important;
+    font-family: 'Inter', sans-serif;
+    background-color: transparent !important;
+    /* Добавляем плавность при масштабировании */
+    will-change: transform;
+    backface-visibility: hidden;
   }
-
-  .vis-item.InProgress {
-    background-color: #2563eb !important;
-    border-color: #3b82f6 !important;
+  
+  .vis-panel.vis-center,
+  .vis-panel.vis-left,
+  .vis-panel.vis-right,
+  .vis-panel.vis-top,
+  .vis-panel.vis-bottom {
+    border-color: #334155 !important;
   }
-
-  .vis-item.Done {
-    background-color: #16a34a !important;
+  
+  .vis-grid.vis-vertical,
+  .vis-grid.vis-horizontal {
+    border-color: rgba(51, 65, 85, 0.5) !important;
+  }
+  
+  .vis-time-axis .vis-text {
+    color: #94a3b8 !important;
+    font-size: 0.85rem;
+  }
+  
+  .vis-time-axis .vis-grid.vis-minor {
+    border-color: rgba(51, 65, 85, 0.3) !important;
+  }
+  
+  .vis-time-axis .vis-grid.vis-major {
+    border-color: rgba(51, 65, 85, 0.7) !important;
+  }
+  
+  /* Стили для элементов диаграммы */
+  .vis-item {
+    border-radius: 4px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    /* Убираем дёргание при наведении */
+    transition: box-shadow 0.2s ease !important;
+    /* Добавляем аппаратное ускорение */
+    transform: translateZ(0);
+    will-change: box-shadow;
+  }
+  
+  .vis-item:hover {
+    /* Убираем transform при наведении, чтобы избежать дёргания */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+    z-index: 10 !important;
+  }
+  
+  .vis-item.vis-selected {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+  }
+  
+  /* Приоритеты задач */
+  .vis-item.priority-высокий {
+    background-color: rgba(220, 38, 38, 0.8) !important;
+    border-color: #ef4444 !important;
+  }
+  
+  .vis-item.priority-средний {
+    background-color: rgba(245, 158, 11, 0.8) !important;
+    border-color: #fbbf24 !important;
+  }
+  
+  .vis-item.priority-низкий {
+    background-color: rgba(22, 163, 74, 0.8) !important;
     border-color: #22c55e !important;
   }
-
+  
+  /* Содержимое элементов */
   .vis-item .vis-item-content {
-    color: white;
-    font-weight: 500;
+    color: white !important;
+    font-weight: 500 !important;
+    padding: 4px 8px !important;
   }
-
-
+  
+  .gantt-item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .gantt-item-title {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Текущая дата */
+  .vis-current-time {
+    background-color: #3b82f6 !important;
+    width: 2px !important;
+  }
+  
+  /* Тултипы */
+  .vis-tooltip {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    color: #f8fafc !important;
+    font-family: 'Inter', sans-serif !important;
+    padding: 8px 12px !important;
+    /* Фиксируем положение тултипа */
+    pointer-events: none;
+  }
+  
+  .gantt-tooltip-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 6px;
+    color: white;
+  }
+  
+  .gantt-tooltip-dates,
+  .gantt-tooltip-desc,
+  .gantt-tooltip-priority {
+    font-size: 0.875rem;
+    margin-bottom: 4px;
+    color: #cbd5e1;
+  }
+  
+  /* Эффект клика */
+  .click-effect {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba(59, 130, 246, 0.3);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: click-animation 0.3s ease-out forwards;
+    z-index: 9999;
+  }
+  
+  @keyframes click-animation {
+    0% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(2);
+    }
+  }
+  
+  /* Стабилизация при прокрутке и масштабировании */
+  .vis-timeline,
+  .vis-panel,
+  .vis-labelset,
+  .vis-foreground,
+  .vis-group {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
 </style>
 
 {% endblock %}

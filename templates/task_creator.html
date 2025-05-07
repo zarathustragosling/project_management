@@ -8,7 +8,7 @@
   </h1>
 
   <form method="POST"
-        action="{{ url_for('edit_task', task_id=task.id) if is_edit else url_for('task_creator') }}"
+        action="{{ url_for('task.edit_task', task_id=task.id) if is_edit else url_for('task.task_creator') }}"
         class="space-y-6 bg-slate-800 p-6 rounded-xl shadow" enctype="multipart/form-data">
 
     <div>

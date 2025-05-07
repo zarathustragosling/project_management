@@ -1,0 +1,144 @@
+/* Стили для PDF-отчетов */
+@page {
+    margin: 2cm;
+    @top-center {
+        content: "Отчет по проекту";
+        font-family: Arial, sans-serif;
+        font-size: 10pt;
+    }
+    @bottom-center {
+        content: "Страница " counter(page) " из " counter(pages);
+        font-family: Arial, sans-serif;
+        font-size: 10pt;
+    }
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #333;
+}
+
+.report-header {
+    text-align: center;
+    margin-bottom: 2cm;
+}
+
+.report-title {
+    font-size: 24pt;
+    font-weight: bold;
+    margin-bottom: 0.5cm;
+    color: #2563eb;
+}
+
+.report-subtitle {
+    font-size: 14pt;
+    margin-bottom: 0.3cm;
+    color: #555;
+}
+
+.report-meta {
+    margin-top: 1cm;
+    font-size: 11pt;
+    color: #666;
+}
+
+.report-section {
+    margin-bottom: 1.5cm;
+}
+
+.section-title {
+    font-size: 16pt;
+    font-weight: bold;
+    margin-bottom: 0.5cm;
+    color: #2563eb;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.2cm;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1cm;
+}
+
+th {
+    background-color: #2563eb;
+    color: white;
+    font-weight: bold;
+    text-align: left;
+    padding: 0.3cm;
+    border: 1px solid #ccc;
+}
+
+td {
+    padding: 0.3cm;
+    border: 1px solid #ccc;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.stats-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1cm;
+}
+
+.stat-box {
+    border: 1px solid #ccc;
+    padding: 0.5cm;
+    text-align: center;
+    width: 22%;
+}
+
+.stat-value {
+    font-size: 18pt;
+    font-weight: bold;
+    color: #2563eb;
+}
+
+.stat-label {
+    font-size: 10pt;
+    color: #666;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    margin-top: 0.5cm;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #2563eb;
+}
+
+.team-member {
+    margin-bottom: 0.5cm;
+}
+
+.team-member-name {
+    font-weight: bold;
+}
+
+.team-member-role {
+    color: #666;
+    font-style: italic;
+}
+
+.gantt-chart {
+    width: 100%;
+    margin-top: 0.5cm;
+}
+
+.chart-container {
+    width: 100%;
+    height: 300px;
+    margin-top: 0.5cm;
+}

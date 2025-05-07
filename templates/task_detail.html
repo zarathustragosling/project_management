@@ -25,20 +25,52 @@
     <p class="text-slate-400 text-base">{{ task.description or "Нет описания" }}</p>
 
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-slate-300">
-      <p><strong class="text-white">📁 Проект:</strong> <a href="{{ url_for('project_detail', project_id=task.project.id) }}" class="text-blue-400 hover:underline">{{ task.project.name }}</a></p>
+      <p><strong class="text-white">📁 Проект:</strong> <a href="{{ url_for('project.project_detail', project_id=task.project.id) }}" class="text-blue-400 hover:underline">{{ task.project.name }}</a></p>
       <p><strong class="text-white">🔥 Приоритет:</strong> {{ task.priority }}</p>
       <p><strong class="text-white">📌 Статус:</strong> {{ task.status.value }}</p>
       <p><strong class="text-white">🕓 Создано:</strong> {{ task.created_at.strftime('%d.%m.%Y %H:%M') }}</p>
-      <p><strong class="text-white">⏳ Дедлайн:</strong> {{ task.deadline.strftime('%d.%m.%Y') if task.deadline else "Не установлен" }}</p>
-      <p><strong class="text-white">👤 Ответственный:</strong> {{ task.assigned_user.username if task.assigned_user else "Не назначен" }}</p>
-      <p><strong class="text-white">🛠 Постановщик:</strong> {{ task.creator.username }}</p>
+      <p>
+        <strong class="text-white">⏳ Дедлайн:</strong> 
+        {{ task.deadline.strftime('%d.%m.%Y') if task.deadline else "Не установен" }}
+        {% if task.status.value != 'DONE' and task.deadline and task.deadline < now.date() %}
+          <span class="ml-2 text-red-500 animate-pulse">⚠️ Просрочена</span>
+        {% endif %}
+      </p>
+      <p class="text-sm text-gray-400">
+        <span class="inline-flex items-center">
+          <span class="mr-1">👤</span>
+          <strong class="text-white">Ответственный:</strong>
+          {% if task.assigned_user %}
+            <a href="{{ url_for('user.view_profile', user_id=task.assigned_user.id) }}" 
+               class="text-blue-400 hover:underline ml-1">
+              {{ task.assigned_user.username }}
+            </a>
+          {% else %}
+            <span class="ml-1">Не назначен</span>
+          {% endif %}
+        </span>
+      </p>
+      
+      <p class="text-sm text-gray-400">
+        <span class="inline-flex items-center">
+          <span class="mr-1">🛠</span>
+          <strong class="text-white">Постановщик:</strong>
+          <a href="{{ url_for('user.view_profile', user_id=task.creator.id) }}" 
+             class="text-blue-400 hover:underline ml-1">
+            {{ task.creator.username }}
+          </a>
+        </span>
+      </p>
+     
     </div>
 
-    {% if current_user.id == task.created_by %}
+    {% if current_user.id == task.created_by or current_user.is_teamlead() %}
+
+
     <div class="flex gap-4 mt-4">
-      <a href="{{ url_for('edit_task', task_id=task.id) }}" class="bg-blue-600 hover:bg-blue-900 text-white px-4 py-2 rounded-md transition text-sm font-medium">✏️ Редактировать</a>
+      <a href="{{ url_for('task.edit_task', task_id=task.id) }}" class="bg-blue-600 hover:bg-blue-900 text-white px-4 py-2 rounded-md transition text-sm font-medium">✏️ Редактировать</a>
   
-      <form method="POST" action="{{ url_for('delete_task', task_id=task.id) }}"
+      <form method="POST" action="{{ url_for('task.delete_task', task_id=task.id) }}"
             onsubmit="return confirm('Вы уверены, что хотите удалить эту задачу?');">
         <button type="submit"
                 class="bg-red-600 hover:bg-red-900 text-white px-4 py-2 rounded-md transition text-sm font-medium">
@@ -54,9 +86,20 @@
   <div class="space-y-6">
     
     <h2 class="text-2xl font-semibold text-white">💬 Комментарии</h2>
+    
+    <!-- Комментарий-решение -->
+    {% for comment in task.comments if comment.is_solution %}
+      <div class="bg-green-900/30 p-4 rounded-lg border border-green-700 mb-6">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-green-500 font-medium">✅ Решение задачи</span>
+        </div>
+        {% set nested_comment = comment %}
+        {% include "_comment_block.html" with context %}
+      </div>
+    {% endfor %}
 
     <div id="comments-list" class="space-y-4">
-      {% for comment in task.comments if not comment.parent_id %}
+      {% for comment in task.comments if not comment.parent_id and not comment.is_solution %}
         {% include "_comment_block.html" with context %}
       {% endfor %}
     </div>
@@ -65,7 +108,7 @@
     <div class="mt-6">
       <h3 class="text-lg font-semibold mb-2 text-white">📝 Добавить комментарий</h3>
       <form id="commentForm" method="POST"
-            action="{{ url_for('add_comment', task_id=task.id) }}"
+            action="{{ url_for('comment.add_comment', task_id=task.id) }}"
             enctype="multipart/form-data"
             class="space-y-4 bg-slate-800 p-4 rounded-lg">
         <input type="hidden" name="parent_id" id="parent_id" value="">

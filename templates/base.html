@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Проектное управление{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
 
     <!-- TailwindCSS & Flowbite -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,9 +17,16 @@
 
     <!-- Fonts -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap"
       rel="stylesheet"
     />
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
     <!-- Custom -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
@@ -31,31 +40,45 @@
     <script src="https://unpkg.com/frappe-gantt/dist/frappe-gantt.min.js"></script>
   </head>
 
-  <body class="bg-slate-950 text-white font-inter min-h-screen">
-
+  <body class="bg-gray-900 text-gray-100 font-inter min-h-screen transition-colors duration-300">
     <!-- Navbar -->
-    <nav class="fixed top-0 left-0 w-full z-50 bg-slate-900 border-b border-slate-800 shadow-md">
-      <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <a href="/" class="text-xl font-semibold text-blue-400">Проектное управление</a>
-        <div class="flex gap-4 items-center text-sm">
-          <a href="{{ url_for('project_list') }}" class="hover:text-blue-400">Проекты</a>
-          <a href="{{ url_for('kanban') }}" class="hover:text-blue-400">Канбан</a>
-          <a href="{{ url_for('charts') }}" class="hover:text-blue-400">Диаграммы</a>
-          <a href="{{ url_for('reports') }}" class="hover:text-blue-400">Отчёты</a>
+    <nav class="fixed top-0 left-0 w-full z-50 bg-gray-800 border-b border-gray-700 shadow-lg transition-all duration-300">
+      <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+        <a href="/" class="text-xl font-semibold text-gray-100 hover:text-gray-300 transition-colors duration-300 flex items-center">
+          <i class="fas fa-project-diagram mr-2"></i>
+          <span class="gradient-text">Проектное управление</span>
+        </a>
+        <div class="flex gap-6 items-center text-sm">
           {% if current_user.team_id %}
-            <a href="{{ url_for('team_detail', team_id=current_user.team_id) }}" class="btn-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">Команда</a>
-          {% else %}
-            <a href="{{ url_for('edit_team') }}" class="btn-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">Команда</a>
+            <a href="{{ url_for('project.project_list') }}" class="nav-link"><i class="fas fa-folder-open mr-1"></i> Проекты</a>
+            <a href="{{ url_for('task.kanban') }}" class="nav-link"><i class="fas fa-columns mr-1"></i> Канбан</a>
+            <a href="{{ url_for('charts.charts') }}" class="nav-link"><i class="fas fa-chart-pie mr-1"></i> Диаграмма Ганта</a>
+            <a href="{{ url_for('report.reports') }}" class="nav-link"><i class="fas fa-file-alt mr-1"></i> Отчёты</a>
+            <a href="{{ url_for('team.team_detail', team_id=current_user.team_id) }}" class="btn-sm bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded transition-colors duration-300">
+              <i class="fas fa-users mr-1"></i> Команда
+            </a>
+            {% if current_user.is_authenticated and current_user.is_admin %}
+            <a href="{{ url_for('admin.system_admin_panel') }}" class="nav-link">
+              <i class="fas fa-file-alt mr-1"></i> Админ
+            </a>
+          {% endif %}
+        {% else %}
+            <span class="nav-link text-gray-500 cursor-not-allowed"><i class="fas fa-folder-open mr-1"></i> Проекты</span>
+            <span class="nav-link text-gray-500 cursor-not-allowed"><i class="fas fa-columns mr-1"></i> Канбан</span>
+            <span class="nav-link text-gray-500 cursor-not-allowed"><i class="fas fa-chart-pie mr-1"></i> Диаграма Ганта</span>
+            <span class="nav-link text-gray-500 cursor-not-allowed"><i class="fas fa-file-alt mr-1"></i> Отчёты</span>
+            <span class="btn-sm bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded transition-colors duration-300 cursor-not-allowed"><i class="fas fa-file-alt mr-1"></i> Команда</span>
           {% endif %}
         </div>
-        <div class="flex gap-2 items-center text-sm">
+        <div class="flex gap-4 items-center text-sm">
           {% if current_user.is_authenticated %}
-            <a href="{{ url_for('update_profile') }}" class="hover:text-blue-400">Профиль</a>
-            <a href="{{ url_for('dashboard') }}" class="hover:text-blue-400">Кабинет</a>
-            <a href="{{ url_for('logout') }}" class="btn-sm bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">Выйти</a>
+            <a href="{{ url_for('user.update_profile') }}" class="nav-link"><i class="fas fa-user mr-1"></i> Личный кабинет</a>
+            <a href="{{ url_for('user.logout') }}" class="btn-sm bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded transition-colors duration-300">
+              <i class="fas fa-sign-out-alt mr-1"></i> Выйти
+            </a>
           {% else %}
-            <a href="{{ url_for('login') }}" class="hover:text-blue-400">Войти</a>
-            <a href="{{ url_for('register') }}" class="hover:text-blue-400">Регистрация</a>
+            <a href="{{ url_for('user.login') }}" class="nav-link"><i class="fas fa-sign-in-alt mr-1"></i> Войти</a>
+            <a href="{{ url_for('user.register') }}" class="nav-link"><i class="fas fa-user-plus mr-1"></i> Регистрация</a>
           {% endif %}
         </div>
       </div>
@@ -64,9 +87,10 @@
     <!-- Flash messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div class="mt-24 max-w-3xl mx-auto px-4 space-y-2">
+      <div class="mt-24 max-w-3xl mx-auto px-4 space-y-2" data-aos="fade-down" data-aos-duration="800">
         {% for category, message in messages %}
-          <div class="text-sm px-4 py-2 rounded {{ 'bg-green-600' if category == 'success' else 'bg-red-600' }}">
+          <div class="text-sm px-4 py-3 rounded-lg shadow-md flex items-center {{ 'bg-green-600' if category == 'success' else 'bg-red-600' }}">
+            <i class="{{ 'fas fa-check-circle' if category == 'success' else 'fas fa-exclamation-circle' }} mr-2"></i>
             {{ message }}
           </div>
         {% endfor %}
@@ -75,36 +99,44 @@
     {% endwith %}
 
     <!-- Page content -->
-    <main class="mt-32 max-w-7xl mx-auto px-4">
+    <main class="mt-32 max-w-7xl mx-auto px-4 pb-12">
       {% block content %}{% endblock %}
     </main>
 
-
-
+   
 
     <!-- Force Tailwind to preserve dynamically used classes -->
-<div class="hidden">
-    text-xs text-sm text-white text-blue-400 text-gray-400
-    hover:underline hover:bg-gray-700 hover:text-blue-400
-    bg-gray-800 bg-gray-900 bg-slate-800 bg-slate-700
-    rounded rounded-lg rounded-xl
-    w-10 h-10 object-cover
-    btn btn-sm
-    ml-10 ml-12 mt-2 mt-4 space-y-4
-    flex items-start gap-3 items-center justify-between font-bold transition
-  </div>
+    <div class="hidden">
+      text-xs text-sm text-white text-gray-400 text-gray-300 text-gray-200 text-gray-100
+      hover:underline hover:bg-gray-700 hover:text-gray-300
+      bg-gray-800 bg-gray-900 bg-gray-700 bg-gray-600
+      rounded rounded-lg rounded-xl
+      w-10 h-10 object-cover
+      btn btn-sm
+      ml-10 ml-12 mt-2 mt-4 space-y-4
+      flex items-start gap-3 items-center justify-between font-bold transition
+    </div>
 
-  <div class="hidden">
-    text-sm text-xs text-white text-gray-400 text-blue-400
-    hover:underline hover:text-blue-400
-    w-10 h-10 object-cover rounded-full
-    bg-slate-800 p-4 rounded-lg
-    flex items-start gap-3
-    ml-6 border-l border-slate-600 pl-4
-    mt-2 mb-4 space-y-4
-    btn btn-sm reply-btn
-  </div>
-  
-
+    <div class="hidden">
+      text-sm text-xs text-white text-gray-400 text-gray-300
+      hover:underline hover:text-gray-300
+      w-10 h-10 object-cover rounded-full
+      bg-gray-800 p-4 rounded-lg
+      flex items-start gap-3
+      ml-6 border-l border-gray-600 pl-4
+      mt-2 mb-4 space-y-4
+      btn btn-sm reply-btn
+    </div>
+    
+    <script>
+      // Инициализация AOS (Animate On Scroll)
+      document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({
+          once: true,
+          duration: 800,
+          easing: 'ease-out'
+        });
+      });
+    </script>
   </body>
 </html>

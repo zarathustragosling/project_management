@@ -1,20 +1,28 @@
 {% extends 'base.html' %}
-
-{% block title %}Выбрать команду{% endblock %}
+{% block title %}Выбор команды{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Выберите команду</h1>
-    <form method="POST" action="{{ url_for('select_team') }}">
-        <label for="team_id">Команда:</label>
-        <select id="team_id" name="team_id" required>
-            <option value="">-- Выберите команду --</option>
-            {% for team in teams %}
-            <option value="{{ team.id }}">{{ team.name }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit" class="btn">Выбрать команду</button>
+<div class="max-w-xl mx-auto p-6 space-y-6">
+  <h1 class="text-2xl font-bold text-white text-center">🚀 Добро пожаловать!</h1>
+  <p class="text-center text-slate-400">Выберите способ присоединиться к команде:</p>
+
+  <div class="flex flex-col gap-4">
+    <a href="{{ url_for('team.create_team') }}"
+       class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-center font-medium">
+      ✅ Создать новую команду
+    </a>
+
+    <form method="POST" action="{{ url_for('team.join_team') }}"
+          class="bg-slate-800 p-4 rounded-lg space-y-3 border border-slate-700">
+      <label for="invite_code" class="block text-white text-sm font-medium">🔑 Код приглашения</label>
+      <input type="text" id="invite_code" name="invite_code" placeholder="Вставьте код приглашения"
+             class="w-full bg-gray-900 text-white p-3 rounded border border-gray-700" required>
+
+      <button type="submit"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium w-full">
+        🧩 Присоединиться к команде
+      </button>
     </form>
-    <a href="{{ url_for('create_team') }}" class="btn">Создать новую команду</a>
+  </div>
 </div>
 {% endblock %}

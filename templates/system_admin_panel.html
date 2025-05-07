@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Админ-панель{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8 space-y-10">
+
+  <h1 class="text-3xl font-bold text-white mb-6">⚙️ Панель администратора</h1>
+
+  <!-- USERS -->
+  <section>
+    <h2 class="text-xl font-semibold text-white mb-2">👤 Пользователи</h2>
+    <ul class="space-y-2">
+      {% for user in users %}
+      <li class="bg-slate-900 p-4 rounded flex justify-between items-start">
+        <div>
+          <strong>{{ user.username }}</strong> — {{ user.email }}<br>
+          🏷 Роль: {{ user.role.name if user.role else "N/A" }}{% if user.is_admin %} (Admin){% endif %}
+        </div>
+        <div class="space-x-2">
+          <a href="{{ url_for('admin.admin_edit_user', user_id=user.id) }}" class="text-blue-400 hover:underline text-sm">✏️</a>
+          <form method="POST" action="{{ url_for('admin.admin_delete_user', user_id=user.id) }}" class="inline">
+            <button type="submit" class="text-red-500 hover:underline text-sm">🗑</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <!-- TEAMS -->
+  <section>
+    <h2 class="text-xl font-semibold text-white mb-2">👥 Команды</h2>
+    <ul class="space-y-2">
+      {% for team in teams %}
+      <li class="bg-slate-900 p-4 rounded flex justify-between items-start">
+        <div>
+          <strong>{{ team.name }}</strong><br>
+          {{ team.description or "Без описания" }}
+        </div>
+        <div class="space-x-2">
+          <a href="{{ url_for('admin.admin_edit_team', team_id=team.id) }}" class="text-blue-400 hover:underline text-sm">✏️</a>
+          <form method="POST" action="{{ url_for('admin.admin_delete_team', team_id=team.id) }}" class="inline">
+            <button type="submit" class="text-red-500 hover:underline text-sm">🗑</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <!-- PROJECTS -->
+  <section>
+    <h2 class="text-xl font-semibold text-white mb-2">📁 Проекты</h2>
+    <ul class="space-y-2">
+      {% for project in projects %}
+      <li class="bg-slate-900 p-4 rounded flex justify-between items-start">
+        <div>
+          <strong>{{ project.name }}</strong><br>
+          {{ project.description or "Без описания" }}
+        </div>
+        <div class="space-x-2">
+          <a href="{{ url_for('admin.admin_edit_project', project_id=project.id) }}" class="text-blue-400 hover:underline text-sm">✏️</a>
+          <form method="POST" action="{{ url_for('admin.admin_delete_project', project_id=project.id) }}" class="inline">
+            <button type="submit" class="text-red-500 hover:underline text-sm">🗑</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <!-- TASKS -->
+  <section>
+    <h2 class="text-xl font-semibold text-white mb-2">📝 Задачи</h2>
+    <ul class="space-y-2">
+      {% for task in tasks %}
+      <li class="bg-slate-900 p-4 rounded flex justify-between items-start">
+        <div>
+          <strong>{{ task.title }}</strong><br>
+          {{ task.status.value }} | Приоритет: {{ task.priority }}<br>
+          Проект: {{ task.project.name }}
+        </div>
+        <div class="space-x-2">
+          <a href="{{ url_for('admin.admin_edit_task', task_id=task.id) }}" class="text-blue-400 hover:underline text-sm">✏️</a>
+          <form method="POST" action="{{ url_for('admin.admin_delete_task', task_id=task.id) }}" class="inline">
+            <button type="submit" class="text-red-500 hover:underline text-sm">🗑</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <!-- COMMENTS -->
+  <section>
+    <h2 class="text-xl font-semibold text-white mb-2">💬 Комментарии</h2>
+    <ul class="space-y-2">
+      {% for comment in comments %}
+      <li class="bg-slate-900 p-4 rounded flex justify-between items-start">
+        <div>
+          <strong>{{ comment.author.username }}</strong> — {{ comment.content[:50] }}...
+        </div>
+        <div class="space-x-2">
+          <a href="{{ url_for('admin.admin_edit_comment', comment_id=comment.id) }}" class="text-blue-400 hover:underline text-sm">✏️</a>
+          <form method="POST" action="{{ url_for('admin.admin_delete_comment', comment_id=comment.id) }}" class="inline">
+            <button type="submit" class="text-red-500 hover:underline text-sm">🗑</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+</div>
+{% endblock %}

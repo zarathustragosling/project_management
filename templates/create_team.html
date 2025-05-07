@@ -1,14 +1,37 @@
 {% extends 'base.html' %}
-
 {% block title %}Создать команду{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Создать новую команду</h1>
-    <form method="POST" action="{{ url_for('create_team') }}">
-        <label for="name">Название команды:</label>
-        <input type="text" id="name" name="name" required>
-        <button type="submit" class="btn">Создать команду</button>
-    </form>
+<div class="max-w-xl mx-auto p-6 space-y-6">
+  <h1 class="text-3xl font-bold text-white">👥 Создание новой команды</h1>
+
+  <form method="POST" action="{{ url_for('team.create_team') }}"
+        class="space-y-4 bg-slate-800 p-6 rounded-xl" enctype="multipart/form-data">
+
+    <div>
+      <label for="name" class="text-sm text-white block mb-1">Название команды</label>
+      <input type="text" id="name" name="name" required
+             class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+    </div>
+
+    <div>
+      <label for="avatar_url" class="text-sm text-white block mb-1">Ссылка на аватар</label>
+      <input type="url" id="avatar_url" name="avatar_url"
+             class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+    </div>
+
+    <div>
+      <label for="description" class="text-sm text-white block mb-1">Описание</label>
+      <textarea id="description" name="description" rows="3"
+                class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700"></textarea>
+    </div>
+
+    <div>
+      <button type="submit"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium text-sm transition">
+        ✅ Создать команду
+      </button>
+    </div>
+  </form>
 </div>
 {% endblock %}

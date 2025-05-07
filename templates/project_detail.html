@@ -45,7 +45,7 @@
           data-status="{{ task.status.value }}"
           data-priority="{{ task.priority }}"
           data-created="{{ task.created_at.timestamp() }}">
-        <a href="{{ url_for('task_detail', task_id=task.id) }}" class="text-blue-400 hover:underline font-medium">
+        <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="text-blue-400 hover:underline font-medium">
           {{ task.title }}
         </a>
         <div class="text-sm text-slate-400 mt-1">
@@ -66,7 +66,7 @@
       <ul class="space-y-2">
         {% for report in project.reports %}
         <li class="bg-slate-800 rounded-lg p-3 hover:shadow transition">
-          <a href="{{ url_for('view_report', report_id=report.id) }}" class="text-blue-400 hover:underline">
+          <a href="{{ url_for('report.view_report', report_id=report.id) }}" class="text-blue-400 hover:underline">
             {{ report.filename }}
           </a>
         </li>
@@ -76,7 +76,7 @@
       <p class="text-slate-400 text-sm">Отчеты пока отсутствуют.</p>
     {% endif %}
 
-    <a href="{{ url_for('reports') }}"
+    <a href="{{ url_for('report.reports') }}"
        class="inline-block mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
       + Добавить отчет
     </a>

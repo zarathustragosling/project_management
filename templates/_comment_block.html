@@ -12,7 +12,7 @@
 
     <div class="{{ 'bg-slate-700' if is_reply else 'bg-gray-800' }} p-4 rounded-lg w-full">
       <div class="flex items-center gap-2 text-sm">
-        <a href="{{ url_for('user_profile', user_id=comment.author.id) }}"
+        <a href="{{ url_for('user.view_profile', user_id=comment.author.id) }}"
            class="font-semibold text-white hover:text-blue-400 transition">
            {{ comment.author.username }}
         </a>
@@ -36,6 +36,14 @@
         </div>
       {% endif %}
 
+      {% if current_user.id == comment.author.id %}
+        <button class="edit-comment-btn mt-3 text-xs text-blue-400 hover:underline mr-3"
+                data-comment-id="{{ comment.id }}"
+                data-comment-content="{{ comment.content|escape }}">
+          Редактировать
+        </button>
+      {% endif %}
+      
       {% if not is_reply %}
         <button class="reply-btn mt-3 text-xs text-blue-400 hover:underline"
                 data-username="{{ comment.author.username }}"
@@ -43,6 +51,27 @@
                 data-commentid="{{ comment.id }}">
           Ответить
         </button>
+        
+        {% if (current_user.id == comment.task.created_by or current_user.is_teamlead()) and not comment.is_solution and not comment.task.comments|selectattr('is_solution', 'true')|list %}
+          <form method="POST" action="{{ url_for('comment.mark_as_solution', comment_id=comment.id) }}" class="inline" style="display: inline;">
+            <button type="submit" class="mt-3 ml-3 text-xs text-green-400 hover:underline">
+              ✅ Пометить как решение
+            </button>
+          </form>
+        {% endif %}
+        
+        {% if comment.is_solution %}
+          <span class="mt-3 ml-3 text-xs text-green-500 font-medium">
+            ✅ Помечен как решение задачи
+          </span>
+          {% if current_user.id == comment.task.created_by or current_user.is_teamlead() %}
+            <form method="POST" action="{{ url_for('comment.unmark_as_solution', comment_id=comment.id) }}" class="inline" style="display: inline;">
+              <button type="submit" class="mt-3 ml-3 text-xs text-red-400 hover:underline">
+                ❌ Снять отметку
+              </button>
+            </form>
+          {% endif %}
+        {% endif %}
       {% endif %}
     </div>
   </div>

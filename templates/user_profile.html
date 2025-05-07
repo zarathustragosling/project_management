@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}{{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto mt-10 space-y-6">
+  <div class="flex items-center gap-4">
+    <img src="{{ user.avatar or url_for('static', filename='default_avatar.png') }}"
+         class="w-20 h-20 rounded-full object-cover">
+    <div>
+      <h1 class="text-2xl font-bold text-white">{{ user.username }}</h1>
+      <p class="text-blue-400 text-sm">{{ user.role.name }}</p>
+    </div>
+  </div>
+
+  {% if user.description %}
+  <div class="text-slate-300 whitespace-pre-wrap">
+    {{ user.description }}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

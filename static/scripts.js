@@ -1,107 +1,116 @@
 
-  document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
+  // Инициализация всех компонентов с анимациями
+  initializeAnimations();
 
+  // Функция для подсветки упоминаний пользователей
+  function highlightMentions(text) {
+    return text.replace(/<@(\d+):([\wА-яёЁ.-]+)>/g, (_, id, name) =>
+      `<a href="/user/${id}" class="text-blue-400 hover:underline transition-colors duration-300">@${name}</a>`
+    );
+  }
 
-    
-  
-
-    function highlightMentions(text) {
-        return text.replace(/<@(\d+):([\wА-яёЁ.-]+)>/g, (_, id, name) =>
-          `<a href="/user/${id}" class="text-blue-400 hover:underline">@${name}</a>`
-        );
+  // === Редактирование задачи ===
+  const form = document.getElementById('editTaskForm');
+  if (form) {
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      
+      // Анимация кнопки при отправке
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.classList.add('animate-pulse');
+        submitBtn.disabled = true;
       }
-
-
-
-    // === Drag'n'Drop ===
-    const columns = document.querySelectorAll('.kanban-column');
-    const tasks = document.querySelectorAll('.task-card');
-  
-    tasks.forEach(task => {
-      task.setAttribute('draggable', true);
-      task.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', task.dataset.taskId);
-        task.classList.add('dragging');
-        task.style.opacity = '0.5';
-      });
-      task.addEventListener('dragend', () => {
-        task.classList.remove('dragging');
-        task.style.opacity = '1';
-      });
-    });
-  
-    columns.forEach(column => {
-      column.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        column.classList.add('dragover');
-      });
-      column.addEventListener('dragleave', () => {
-        column.classList.remove('dragover');
-      });
-      column.addEventListener('drop', (e) => {
-        e.preventDefault();
-        column.classList.remove('dragover');
-        const taskId = e.dataTransfer.getData('text/plain');
-        const taskCard = document.querySelector(`.task-card[data-task-id='${taskId}']`);
-        if (taskCard && column !== taskCard.parentElement) {
-          const statusKey = column.id.replace('-column', '').toUpperCase().replace('-', '_');
-          column.appendChild(taskCard);
-          fetch(`/update_task_status/${taskId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: statusKey })
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (!data.success) alert('Ошибка обновления: ' + data.error);
-          })
-          .catch(error => console.error('Ошибка запроса:', error));
+      
+      const taskId = form.dataset.taskId;
+      const data = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        priority: document.getElementById('priority').value,
+        status: document.getElementById('status').value,
+        project_id: document.getElementById('project_id').value,
+        assigned_to: document.getElementById('assigned_to').value,
+        deadline: document.getElementById('deadline')?.value || null
+      };
+      
+      const statusDiv = document.getElementById('saveStatus');
+      statusDiv.style.display = 'block';
+      statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Сохранение...';
+      statusDiv.classList.add('bg-gray-700', 'text-gray-100', 'rounded', 'p-2', 'shadow-lg');
+      
+      try {
+        const res = await fetch(`/task/${taskId}/update`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          statusDiv.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Изменения сохранены';
+          statusDiv.classList.remove('bg-gray-700');
+          statusDiv.classList.add('bg-green-600');
+          
+          // Анимация успешного сохранения
+          statusDiv.animate([
+            { opacity: 0.7, transform: 'scale(0.95)' },
+            { opacity: 1, transform: 'scale(1)' }
+          ], { duration: 300, easing: 'ease-out' });
+        } else {
+          statusDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i> Ошибка';
+          statusDiv.classList.remove('bg-gray-700');
+          statusDiv.classList.add('bg-red-600');
         }
-      });
-    });
-  
-    // === Patch Task ===
-    const form = document.getElementById('editTaskForm');
-    if (form) {
-      form.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const taskId = form.dataset.taskId;
-        const data = {
-          title: document.getElementById('title').value,
-          description: document.getElementById('description').value,
-          priority: document.getElementById('priority').value,
-          status: document.getElementById('status').value,
-          project_id: document.getElementById('project_id').value,
-          assigned_to: document.getElementById('assigned_to').value,
-          deadline: document.getElementById('deadline')?.value || null
-        };
-        const statusDiv = document.getElementById('saveStatus');
-        statusDiv.style.display = 'block';
-        statusDiv.textContent = 'Сохранение...';
-        try {
-          const res = await fetch(`/task/${taskId}/update`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
-          const result = await res.json();
-          statusDiv.textContent = result.success ? 'Изменения сохранены ✅' : 'Ошибка ❌';
-        } catch (err) {
-          statusDiv.textContent = 'Ошибка соединения ❌';
-          console.error('Ошибка запроса:', err);
+      } catch (err) {
+        statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Ошибка соединения';
+        statusDiv.classList.remove('bg-gray-700');
+        statusDiv.classList.add('bg-red-600');
+        console.error('Ошибка запроса:', err);
+      } finally {
+        if (submitBtn) {
+          submitBtn.classList.remove('animate-pulse');
+          submitBtn.disabled = false;
         }
-      });
-    }
+        
+        // Автоматически скрыть уведомление через 3 секунды
+        setTimeout(() => {
+          statusDiv.animate([
+            { opacity: 1 },
+            { opacity: 0 }
+          ], { duration: 500, easing: 'ease-out' }).onfinish = () => {
+            statusDiv.style.display = 'none';
+          };
+        }, 3000);
+      }
+    });
+  }
   
-    // === Project → Assigned users ===
-    const projectSelect = document.getElementById("project_id");
-    const assignedSelect = document.getElementById("assigned_to");
-    if (projectSelect && assignedSelect) {
-      projectSelect.addEventListener("change", () => {
-        const projectId = projectSelect.value;
-        fetch(`/get_project_users/${projectId}`)
-          .then(response => response.json())
-          .then(users => {
+  // === Проект → Назначенные пользователи ===
+  const projectSelect = document.getElementById("project_id");
+  const assignedSelect = document.getElementById("assigned_to");
+  if (projectSelect && assignedSelect) {
+    projectSelect.addEventListener("change", () => {
+      const projectId = projectSelect.value;
+      
+      // Анимация загрузки
+      assignedSelect.disabled = true;
+      assignedSelect.classList.add('opacity-50');
+      
+      // Добавляем опцию загрузки
+      const loadingOption = document.createElement('option');
+      loadingOption.textContent = 'Загрузка...';
+      assignedSelect.innerHTML = '';
+      assignedSelect.appendChild(loadingOption);
+      
+      fetch(`/get_project_users/${projectId}`)
+        .then(response => response.json())
+        .then(users => {
+          // Плавная анимация обновления списка
+          assignedSelect.classList.add('opacity-0');
+          
+          setTimeout(() => {
             assignedSelect.innerHTML = '<option value="">Не назначен</option>';
             users.forEach(user => {
               const option = document.createElement("option");
@@ -109,112 +118,395 @@
               option.textContent = user.username;
               assignedSelect.appendChild(option);
             });
-          });
-      });
-    }
+            
+            assignedSelect.disabled = false;
+            assignedSelect.classList.remove('opacity-50');
+            assignedSelect.classList.remove('opacity-0');
+            assignedSelect.classList.add('opacity-100');
+          }, 300);
+        })
+        .catch(error => {
+          console.error('Ошибка загрузки пользователей:', error);
+          assignedSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+          assignedSelect.disabled = false;
+          assignedSelect.classList.remove('opacity-50');
+        });
+    });
+  }
   
-     // Reply btn logic (initial)
+  // === Модальное окно для редактирования комментария ===
+  // Создаем модальное окно для редактирования комментария, если его еще нет
+  let editCommentModal = document.getElementById('editCommentModal');
+  if (!editCommentModal) {
+    const modalHTML = `
+      <div id="editCommentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-lg transform transition-all">
+          <h3 class="text-lg font-semibold text-white mb-4">Редактировать комментарий</h3>
+          <form id="editCommentForm">
+            <input type="hidden" id="editCommentId">
+            <textarea id="editCommentContent" rows="4" class="w-full p-3 rounded bg-gray-900 text-white border border-gray-700 focus:border-blue-400" required></textarea>
+            <div class="flex justify-end mt-4 space-x-3">
+              <button type="button" id="cancelEditComment" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition">Отмена</button>
+              <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition">Сохранить</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    editCommentModal = document.getElementById('editCommentModal');
+    
+    // Обработчик закрытия модального окна
+    document.getElementById('cancelEditComment').addEventListener('click', () => {
+      editCommentModal.classList.add('hidden');
+    });
+    
+    // Обработчик отправки формы редактирования
+    document.getElementById('editCommentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const commentId = document.getElementById('editCommentId').value;
+      const content = document.getElementById('editCommentContent').value.trim();
+      
+      if (!content) {
+        showNotification('Комментарий не может быть пустым', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/comment/${commentId}/edit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ content })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Получаем обновленный HTML комментария с сервера
+          const htmlResponse = await fetch(`/comment/${commentId}/html`);
+          const html = await htmlResponse.text();
+          
+          // Находим текущий элемент комментария
+          const commentThread = document.querySelector(`[data-comment-id="${commentId}"]`);
+          if (commentThread) {
+            // Создаем временный элемент для нового HTML
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = html;
+            const newCommentEl = wrapper.firstElementChild;
+            
+            // Сохраняем высоту и другие размеры текущего комментария
+            const oldHeight = commentThread.offsetHeight;
+            const oldWidth = commentThread.offsetWidth;
+            
+            // Заменяем старый комментарий на новый
+            commentThread.parentNode.replaceChild(newCommentEl, commentThread);
+            
+            // Добавляем обработчик для кнопки редактирования нового комментария
+            const editBtn = newCommentEl.querySelector('.edit-comment-btn');
+            if (editBtn) {
+              attachEditButtonHandler(editBtn);
+            }
+            
+            // Анимация обновления комментария
+            newCommentEl.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+            setTimeout(() => {
+              newCommentEl.style.transition = 'background-color 1s ease-out';
+              newCommentEl.style.backgroundColor = 'transparent';
+            }, 50);
+          }
+          
+          // Закрываем модальное окно
+          editCommentModal.classList.add('hidden');
+          
+          // Показываем уведомление об успешном обновлении
+          showNotification('Комментарий успешно обновлен', 'success');
+        } else {
+          showNotification(data.error || 'Ошибка при обновлении комментария', 'error');
+        }
+      } catch (error) {
+        console.error('Ошибка при обновлении комментария:', error);
+        showNotification('Произошла ошибка при обновлении комментария', 'error');
+      }
+    });
+  }
+  
+  // Функция для обработки клика по кнопке редактирования
+  function attachEditButtonHandler(btn) {
+    btn.addEventListener('click', () => {
+      const commentId = btn.dataset.commentId;
+      const commentContent = btn.dataset.commentContent;
+      
+      // Заполняем форму редактирования
+      document.getElementById('editCommentId').value = commentId;
+      // Декодируем HTML-атрибуты перед установкой в поле ввода
+      document.getElementById('editCommentContent').value = commentContent.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+      
+      // Показываем модальное окно с анимацией
+      editCommentModal.classList.remove('hidden');
+      const modalContent = editCommentModal.querySelector('div');
+      modalContent.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+      }, 10);
+      
+      // Фокус на поле ввода
+      document.getElementById('editCommentContent').focus();
+    });
+  }
+  
+  // Обработчики кнопок редактирования комментариев
+  document.querySelectorAll('.edit-comment-btn').forEach(btn => {
+    attachEditButtonHandler(btn);
+  });
+  
+  // Делегирование событий для динамически добавленных кнопок редактирования
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('edit-comment-btn') || 
+        e.target.closest('.edit-comment-btn')) {
+      const btn = e.target.classList.contains('edit-comment-btn') ? 
+                 e.target : e.target.closest('.edit-comment-btn');
+      
+      // Проверяем, есть ли уже обработчик
+      const hasHandler = btn.getAttribute('data-has-handler');
+      if (!hasHandler) {
+        attachEditButtonHandler(btn);
+        btn.setAttribute('data-has-handler', 'true');
+        btn.click(); // Имитируем клик для открытия формы редактирования
+      }
+    }
+  });
+  
+  // === Логика кнопки ответа ===
   const textarea = document.getElementById("commentContent");
   const parentIdInput = document.getElementById("parent_id");
-  document.querySelectorAll(".reply-btn").forEach(btn => {
+  
+  // Функция для обработки клика по кнопке ответа
+  function attachReplyButtonHandler(btn) {
     btn.addEventListener("click", () => {
       const { username, userid, commentid } = btn.dataset;
+      
+      // Анимация фокуса на форме комментария
+      const commentForm = document.getElementById('commentForm');
+      if (commentForm) {
+        commentForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        commentForm.classList.add('ring-2', 'ring-gray-500');
+        setTimeout(() => commentForm.classList.remove('ring-2', 'ring-gray-500'), 1000);
+      }
+      
       textarea.value = `<@${userid}:${username}> `;
       parentIdInput.value = commentid;
       textarea.focus();
+      
+      // Анимация текстового поля
+      textarea.animate([
+        { boxShadow: '0 0 0 3px rgba(107, 114, 128, 0.5)' },
+        { boxShadow: 'none' }
+      ], { duration: 800, easing: 'ease-out' });
     });
+  }
+  
+  // Добавляем обработчики для существующих кнопок ответа
+  document.querySelectorAll(".reply-btn").forEach(btn => {
+    attachReplyButtonHandler(btn);
+  });
+  
+  // Делегирование событий для динамически добавленных кнопок ответа
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('reply-btn') || 
+        e.target.closest('.reply-btn')) {
+      const btn = e.target.classList.contains('reply-btn') ? 
+                 e.target : e.target.closest('.reply-btn');
+      
+      // Проверяем, есть ли уже обработчик
+      const hasHandler = btn.getAttribute('data-has-handler');
+      if (!hasHandler) {
+        attachReplyButtonHandler(btn);
+        btn.setAttribute('data-has-handler', 'true');
+        btn.click(); // Имитируем клик для активации ответа
+      }
+    }
   });
 
-  // AJAX Comment Submit
+  // === AJAX отправка комментария ===
   const commentForm = document.getElementById("commentForm");
   if (commentForm) {
     commentForm.addEventListener("submit", function (e) {
       e.preventDefault();
+      
+      // Анимация кнопки отправки
+      const submitBtn = commentForm.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Отправка...';
+        submitBtn.disabled = true;
+      }
+      
       const formData = new FormData(commentForm);
       const taskId = commentForm.action.split('/task/')[1].split('/')[0];
-      fetch(`/task/${taskId}/comment`, {
+      
+      fetch(`/comment/task/${taskId}`, {
         method: 'POST',
         body: formData
       })
-      // --- Новый блок замены fetch(...).then(...) внутри commentForm.addEventListener
-
       .then(async res => {
         const data = await res.json();
-        if (!data.success) return alert(data.error || 'Ошибка сервера');
+        if (!data.success) {
+          showNotification(data.error || 'Ошибка сервера', 'error');
+          return;
+        }
       
         const newCommentId = data.comment.id;
       
-        // 👇 Получаем HTML с сервера
+        // Получаем HTML с сервера
         const html = await fetch(`/comment/${newCommentId}/html`).then(r => r.text());
       
-        // 👇 Создаём временный элемент
+        // Создаём временный элемент
         const wrapper = document.createElement("div");
         wrapper.innerHTML = html;
         const commentEl = wrapper.firstElementChild;
+        
+        // Добавляем класс для анимации
+        commentEl.classList.add('opacity-0', 'transform', 'translate-y-4');
       
-        // 👇 Вставляем в DOM
+        // Вставляем в DOM
         const isReply = !!data.comment.parent_id;
         if (isReply) {
           const parent = document.querySelector(`[data-comment-id='${data.comment.parent_id}']`);
-          let repliesBlock = parent.querySelector('.reply-container');
+          let repliesBlock = parent.querySelector('.space-y-4');
           if (!repliesBlock) {
             repliesBlock = document.createElement('div');
-            repliesBlock.className = 'reply-container ml-10 mt-4 space-y-4';
+            repliesBlock.className = 'mt-4 space-y-4';
             parent.appendChild(repliesBlock);
           }
           repliesBlock.appendChild(commentEl);
         } else {
           document.getElementById("comments-list").appendChild(commentEl);
         }
+        
+        // Анимируем появление комментария
+        setTimeout(() => {
+          commentEl.classList.remove('opacity-0', 'transform', 'translate-y-4');
+          commentEl.classList.add('transition-all', 'duration-500', 'ease-out', 'opacity-100');
+        }, 10);
       
-        // Повесим кнопку "Ответить"
+        // Добавляем обработчик для кнопки "Ответить"
         const replyBtn = commentEl.querySelector('.reply-btn');
         if (replyBtn) {
-          replyBtn.addEventListener("click", () => {
-            textarea.value = `<@${replyBtn.dataset.userid}:${replyBtn.dataset.username}> `;
-            parentIdInput.value = replyBtn.dataset.commentid;
-            textarea.focus();
-          });
+          attachReplyButtonHandler(replyBtn);
+        }
+        
+        // Добавляем обработчик для кнопки редактирования
+        const editBtn = commentEl.querySelector('.edit-comment-btn');
+        if (editBtn) {
+          attachEditButtonHandler(editBtn);
         }
       
         commentForm.reset();
         parentIdInput.value = "";
+        
+        // Показываем уведомление об успешной отправке
+        showNotification('Комментарий успешно добавлен', 'success');
       })
-      
-  
-      
       .catch(err => {
         console.error("Ошибка отправки:", err);
-        alert("Ошибка отправки комментария.");
+        showNotification("Ошибка отправки комментария", 'error');
+      })
+      .finally(() => {
+        // Восстанавливаем кнопку
+        if (submitBtn) {
+          submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Отправить';
+          submitBtn.disabled = false;
+        }
       });
     });
   }
 
-
-
   // === Визуальное восстановление дерева комментариев ===
-document.querySelectorAll('.comment-box[data-is-reply="1"]').forEach(reply => {
+  document.querySelectorAll('.comment-thread[data-is-reply="1"]').forEach(reply => {
     const parentId = reply.dataset.parentId;
-    const parent = document.querySelector(`.comment-box[data-is-reply="0"][data-comment-id="${parentId}"]`);
+    const parent = document.querySelector(`.comment-thread[data-is-reply="0"][data-comment-id="${parentId}"]`);
   
     if (parent) {
       // Добавляем reply-container если ещё не добавлен
-      let replyContainer = parent.querySelector('.reply-container');
+      let replyContainer = parent.querySelector('.space-y-4');
       if (!replyContainer) {
         replyContainer = document.createElement('div');
-        replyContainer.classList.add('reply-container', 'ml-10', 'mt-4', 'space-y-2');
+        replyContainer.classList.add('mt-4', 'space-y-4');
         parent.appendChild(replyContainer);
       }
   
       // Вставляем ответ внутрь reply-container
       replyContainer.appendChild(reply);
-  
-      
     }
   });
-
   
+  // === Вспомогательные функции ===
+  
+  // Инициализация анимаций
+  function initializeAnimations() {
+    // Анимация появления элементов при прокрутке
+    const animatedElements = document.querySelectorAll('.task-card, .project-list li, .kanban-column');
+    if (animatedElements.length > 0) {
+      animatedElements.forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        
+        setTimeout(() => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, 100 + (index * 50)); // Последовательная анимация элементов
+      });
+    }
     
-
+    // Анимация наведения для кнопок
+    document.querySelectorAll('.btn, .btn-sm, .btn-primary').forEach(btn => {
+      btn.addEventListener('mouseenter', () => {
+        btn.style.transform = 'translateY(-2px)';
+      });
+      
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'translateY(0)';
+      });
+    });
+  }
+  
+  // Функция для отображения уведомлений
+  function showNotification(message, type = 'info') {
+    // Создаем элемент уведомления
+    const notification = document.createElement('div');
+    notification.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-all duration-500 ease-out translate-y-20 opacity-0`;
+    
+    // Устанавливаем цвет в зависимости от типа
+    if (type === 'success') {
+      notification.classList.add('bg-green-600', 'text-white');
+      notification.innerHTML = `<i class="fas fa-check-circle mr-2"></i> ${message}`;
+    } else if (type === 'error') {
+      notification.classList.add('bg-red-600', 'text-white');
+      notification.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${message}`;
+    } else {
+      notification.classList.add('bg-gray-700', 'text-white');
+      notification.innerHTML = `<i class="fas fa-info-circle mr-2"></i> ${message}`;
+    }
+    
+    // Добавляем на страницу
+    document.body.appendChild(notification);
+    
+    // Анимируем появление
+    setTimeout(() => {
+      notification.classList.remove('translate-y-20', 'opacity-0');
+    }, 10);
+    
+    // Автоматически скрываем через 3 секунды
+    setTimeout(() => {
+      notification.classList.add('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        notification.remove();
+      }, 500);
+    }, 3000);
+  }
 });
 

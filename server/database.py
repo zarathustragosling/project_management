@@ -14,6 +14,22 @@ class Team(db.Model):
     projects = db.relationship('Project', back_populates='team', lazy=True)  # Use back_populates
     avatar_url = db.Column(db.String(300), nullable=True)  # URL к изображению
     description = db.Column(db.Text, nullable=True)        # Описание
+    invite_code = db.Column(db.String(12), unique=True, nullable=False)
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+    users = db.relationship('User', back_populates='role')
+
+    def __repr__(self):
+        return f'<Role {self.name}>'
+
+
+
 
 
 class User(db.Model, UserMixin):
@@ -23,7 +39,19 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(200), nullable=False)
     team_id = db.Column(db.Integer, db.ForeignKey('team.id'), nullable=True)
     avatar = db.Column(db.String(200), nullable=True)
+    description = db.Column(db.Text, nullable=True)  # 🆕
+    
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=True)
+    role = db.relationship('Role', back_populates='users')
+    is_admin = db.Column(db.Boolean, default=False)
+    
+  
 
+    def has_role(self, role_name: str):
+        return self.role and self.role.name == role_name
+
+    def is_teamlead(self):
+        return self.has_role("TeamLead")
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -75,27 +103,36 @@ class Report(db.Model):
     project = db.relationship('Project', back_populates='reports')  # Matches back_populates in Project
 
 
+class CommentType(enum.Enum):
+    COMMENT = "comment"
+    FEED = "feed"
+
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
-    task = db.relationship('Task', back_populates='comments')
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'), nullable=True)
-    
-    
-    author = db.relationship('User', backref='comments')
-    replies = db.relationship(
-    'Comment',
-    backref=db.backref('parent', remote_side=[id]),
-    lazy='joined'  # ✅ теперь можно eager-load
-)
 
-    attachments = db.relationship('CommentAttachment', 
-                                backref='comment', 
-                                lazy=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
+    task = db.relationship('Task', back_populates='comments')
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    author = db.relationship('User', backref='comments')
+    
+    parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'), nullable=True)
+    replies = db.relationship(
+        'Comment',
+        backref=db.backref('parent', remote_side=[id]),
+        lazy='joined'
+    )
+
+    attachments = db.relationship('CommentAttachment', backref='comment', lazy=True)
+
+    # 💬 Тип сообщения
+    type = db.Column(PgEnum(CommentType, name='comment_type'), nullable=False, default=CommentType.COMMENT)
+    
+    # Флаг, указывающий, что комментарий помечен как решение задачи
+    is_solution = db.Column(db.Boolean, default=False)
+
 
     
 class CommentAttachment(db.Model):

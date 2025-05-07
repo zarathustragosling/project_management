@@ -2,59 +2,154 @@
 {% block title %}Kanban-доска{% endblock %}
 
 {% block content %}
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-
-<div class="container">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Kanban-доска</h1>
-        <a href="{{ url_for('task_creator') }}" class="btn">+ Создать задачу</a>
-    </div>
-
-    <div class="kanban-board">
-        <!-- To Do Column -->
-        <div class="kanban-column" id="TO_DO-column">
-            <h2 class="text-xl font-semibold mb-2">To Do</h2>
-            <div class="kanban-items">
-                {% for task in tasks if task.status.value == 'To Do' %}
-                <div class="task-card {{ 'high-priority' if task.priority == 'Высокий' else 'medium-priority' if task.priority == 'Средний' else 'low-priority' }}" data-task-id="{{ task.id }}">
-                    <h3><a href="{{ url_for('task_detail', task_id=task.id) }}">{{ task.title }}</a></h3>
-                    <p>Проект: <a href="{{ url_for('project_detail', project_id=task.project_id) }}">{{ task.project.name }}</a></p>
-                    <p><strong>Ответственный:</strong> {{ task.assigned_user.username if task.assigned_user else "Не назначен" }}</p>
-                    <p><strong>Постановщик:</strong> {{ task.creator.username }}</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- In Progress Column -->
-        <div class="kanban-column" id="IN_PROGRESS-column">
-            <h2 class="text-xl font-semibold mb-2">In Progress</h2>
-            <div class="kanban-items">
-                {% for task in tasks if task.status.value == 'In Progress' %}
-                <div class="task-card {{ 'high-priority' if task.priority == 'Высокий' else 'medium-priority' if task.priority == 'Средний' else 'low-priority' }}" data-task-id="{{ task.id }}">
-                    <h3><a href="{{ url_for('task_detail', task_id=task.id) }}">{{ task.title }}</a></h3>
-                    <p>Проект: <a href="{{ url_for('project_detail', project_id=task.project_id) }}">{{ task.project.name }}</a></p>
-                    <p><strong>Ответственный:</strong> {{ task.assigned_user.username if task.assigned_user else "Не назначен" }}</p>
-                    <p><strong>Постановщик:</strong> {{ task.creator.username }}</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Done Column -->
-        <div class="kanban-column" id="DONE-column">
-            <h2 class="text-xl font-semibold mb-2">Done</h2>
-            <div class="kanban-items">
-                {% for task in tasks if task.status.value == 'Done' %}
-                <div class="task-card {{ 'high-priority' if task.priority == 'Высокий' else 'medium-priority' if task.priority == 'Средний' else 'low-priority' }}" data-task-id="{{ task.id }}">
-                    <h3><a href="{{ url_for('task_detail', task_id=task.id) }}">{{ task.title }}</a></h3>
-                    <p>Проект: <a href="{{ url_for('project_detail', project_id=task.project_id) }}">{{ task.project.name }}</a></p>
-                    <p><strong>Ответственный:</strong> {{ task.assigned_user.username if task.assigned_user else "Не назначен" }}</p>
-                    <p><strong>Постановщик:</strong> {{ task.creator.username }}</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
+<div class="hidden">
+  <div class="w-10 h-10 rounded-full object-cover"></div>
+  <div class="text-sm text-xs text-white text-gray-400 text-blue-400"></div>
+  <div class="hover:underline hover:text-blue-400"></div>
+  <div class="bg-slate-800 bg-slate-700 bg-gray-800 bg-gray-900"></div>
+  <div class="p-4 rounded-lg mt-2 mb-4 space-y-4"></div>
+  <div class="ml-10 ml-6 border-l border-slate-600 pl-4"></div>
+  <div class="flex items-start gap-3"></div>
 </div>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-white">📌 Kanban-доска</h1>
+    <a href="{{ url_for('task.task_creator') }}"
+       class="bg-blue-600 hover:bg-blue-800 text-white px-5 py-2 rounded-lg shadow transition text-sm font-medium">
+      + Создать задачу
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+    {% for column, label in [('To Do', '🕐 To Do'), ('In Progress', '⚙️ In Progress'), ('Done', '✅ Done')] %}
+    <div class="kanban-column bg-slate-800 rounded-xl p-4 shadow min-h-[400px]" id="{{ column.replace(' ', '_') }}-column">
+      <h2 class="text-xl font-semibold text-white mb-4">{{ label }}</h2>
+      <div class="space-y-4">
+        {% for task in tasks if task.status.value == column %}
+        <div class="task-card border-l-4 p-4 rounded-lg shadow transition
+             {% if task.priority == 'Высокий' %}
+               border-red-500 bg-slate-700
+             {% elif task.priority == 'Средний' %}
+               border-yellow-400 bg-slate-700
+             {% else %}
+               border-green-500 bg-slate-700
+             {% endif %}" data-task-id="{{ task.id }}">
+
+          <h3 class="text-white font-semibold text-base mb-1">
+            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="hover:text-blue-400 transition">
+              {{ task.title }}
+            </a>
+          </h3>
+          <div class="flex flex-col gap-1 mt-2">
+            <p class="text-sm text-gray-300">
+              <span class="inline-flex items-center">
+                <span class="mr-1">📁</span>
+                <a href="{{ url_for('project.project_detail', project_id=task.project_id) }}"
+                   class="text-blue-400 hover:underline">{{ task.project.name }}</a>
+              </span>
+            </p>
+            <p class="text-sm text-gray-400">
+              <span class="inline-flex items-center">
+                <span class="mr-1">👤</span>
+                <strong>Ответственный:</strong> &nbsp;
+                {% if task.assigned_user %}
+                  <a href="{{ url_for('user.view_profile', user_id=task.assigned_user.id) }}" class="text-blue-400 hover:underline">
+                    {{ task.assigned_user.username }}
+                  </a>
+                {% else %}
+                  <span>Не назначен</span>
+                {% endif %}
+              </span>
+            </p>
+            <p class="text-sm text-gray-400">
+              <span class="inline-flex items-center">
+                <span class="mr-1">⌚</span>
+                <strong>Постановщик:</strong>&nbsp;
+                <a href="{{ url_for('user.view_profile', user_id=task.creator.id)}}" class="text-blue-400 hover:underline">
+                  {{ task.creator.username }}
+                </a>
+              </span>
+            </p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+  .task-card {
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+  
+  .task-card:hover {
+    transform: translateY(-2px);
+    background-color: #1f2937 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .kanban-column.dragover {
+    outline: 2px dashed #38bdf8;
+    outline-offset: -10px;
+    background-color: #1e293b;
+  }
+
+  .task-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.98);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+</style>
+
+<script>
+  // === Drag'n'Drop ===
+  const columns = document.querySelectorAll('.kanban-column');
+  const tasks = document.querySelectorAll('.task-card');
+
+  tasks.forEach(task => {
+    task.setAttribute('draggable', true);
+    task.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', task.dataset.taskId);
+      task.classList.add('dragging');
+      task.style.opacity = '0.5';
+    });
+    task.addEventListener('dragend', () => {
+      task.classList.remove('dragging');
+      task.style.opacity = '1';
+    });
+  });
+
+  columns.forEach(column => {
+    column.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      column.classList.add('dragover');
+    });
+    column.addEventListener('dragleave', () => {
+      column.classList.remove('dragover');
+    });
+    column.addEventListener('drop', (e) => {
+      e.preventDefault();
+      column.classList.remove('dragover');
+      const taskId = e.dataTransfer.getData('text/plain');
+      const taskCard = document.querySelector(`.task-card[data-task-id='${taskId}']`);
+      if (taskCard && column !== taskCard.parentElement) {
+        const statusKey = column.id.replace('-column', '').toUpperCase().replace('-', '_');
+        column.querySelector('.space-y-4').appendChild(taskCard);
+        fetch(`/task/update_task_status/${taskId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: statusKey })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (!data.success) alert('Ошибка обновления: ' + data.error);
+        })
+        .catch(error => console.error('Ошибка запроса:', error));
+      }
+    });
+  });
+</script>
 {% endblock %}
