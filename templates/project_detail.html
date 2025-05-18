@@ -12,24 +12,24 @@
   </div>
 
   <!-- Панель фильтрации -->
-  <div class="bg-slate-900 p-4 rounded-lg space-y-4">
-    <h2 class="text-xl font-semibold text-white">🔍 Фильтрация задач</h2>
+  <div class="bg-zinc-600 p-4 rounded-lg space-y-4">
+    <h2 class="text-xl font-semibold text-white">Фильтрация задач</h2>
     <div class="grid md:grid-cols-3 gap-4">
-      <select id="statusFilter" class="bg-slate-800 text-white rounded p-2">
+      <select id="statusFilter" class="bg-zinc-800 text-white rounded p-2">
         <option value="">Все статусы</option>
         <option value="To Do">To Do</option>
         <option value="In Progress">In Progress</option>
         <option value="Done">Done</option>
       </select>
 
-      <select id="priorityFilter" class="bg-slate-800 text-white rounded p-2">
+      <select id="priorityFilter" class="bg-zinc-800 text-white rounded p-2">
         <option value="">Все приоритеты</option>
         <option value="Высокий">Высокий</option>
         <option value="Средний">Средний</option>
         <option value="Низкий">Низкий</option>
       </select>
 
-      <select id="sortDate" class="bg-slate-800 text-white rounded p-2">
+      <select id="sortDate" class="bg-zinc-800 text-white rounded p-2">
         <option value="desc">Сначала новые</option>
         <option value="asc">Сначала старые</option>
       </select>
@@ -38,14 +38,14 @@
 
   <!-- Задачи проекта -->
   <div class="space-y-4">
-    <h2 class="text-xl font-semibold text-white">📋 Задачи проекта</h2>
+    <h2 class="text-xl font-semibold text-white">Задачи проекта</h2>
     <ul id="taskList" class="space-y-2">
       {% for task in project.tasks %}
-      <li class="task-card bg-slate-800 rounded-lg p-3 hover:shadow transition"
+      <li class="task-card bg-zinc-900 rounded-lg p-3 hover:shadow transition"
           data-status="{{ task.status.value }}"
           data-priority="{{ task.priority }}"
           data-created="{{ task.created_at.timestamp() }}">
-        <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="text-blue-400 hover:underline font-medium">
+        <a href="{{ url_for('task_blueprint.task_detail', task_id=task.id) }}" class="text-gray-400 hover:underline hover:text-gray-300 font-medium">
           {{ task.title }}
         </a>
         <div class="text-sm text-slate-400 mt-1">
@@ -65,8 +65,8 @@
     {% if project.reports %}
       <ul class="space-y-2">
         {% for report in project.reports %}
-        <li class="bg-slate-800 rounded-lg p-3 hover:shadow transition">
-          <a href="{{ url_for('report.view_report', report_id=report.id) }}" class="text-blue-400 hover:underline">
+        <li class="bg-zinc-900 rounded-lg p-3 hover:shadow transition">
+          <a href="{{ url_for('report_blueprint.view_report', report_id=report.id) }}" class="text-gray-400 hover:underline hover:text-gray-300">
             {{ report.filename }}
           </a>
         </li>
@@ -76,8 +76,8 @@
       <p class="text-slate-400 text-sm">Отчеты пока отсутствуют.</p>
     {% endif %}
 
-    <a href="{{ url_for('report.reports') }}"
-       class="inline-block mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+    <a href="{{ url_for('report_blueprint.reports') }}"
+       class="inline-block mt-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
       + Добавить отчет
     </a>
   </div>

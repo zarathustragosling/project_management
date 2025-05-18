@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Уведомления{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Уведомления</h1>
+        <form action="{{ url_for('notification_blueprint.mark_all_as_read') }}" method="post" id="mark-all-form">
+            <button type="submit" class="btn-sm bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded transition-colors duration-300 shadow-md">
+                <i class="fas fa-check-double mr-1"></i> Отметить все как прочитанные
+            </button>
+        </form>
+    </div>
+    
+    {% if notifications %}
+        <div class="space-y-4">
+            {% for notification in notifications %}
+                <div class="bg-[#2a2a2a] p-4 rounded-lg shadow-md border-l-4 {{ 'border-blue-500' if not notification.is_read else 'border-gray-600' }}">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                {% if notification.type.value == 'task_deadline' %}
+                                    <i class="fas fa-clock text-yellow-500 mr-2"></i>
+                                {% elif notification.type.value == 'task_assigned' %}
+                                    <i class="fas fa-user-check text-green-500 mr-2"></i>
+                                {% elif notification.type.value == 'team_member_joined' %}
+                                    <i class="fas fa-user-plus text-blue-500 mr-2"></i>
+                                {% elif notification.type.value == 'team_member_left' %}
+                                    <i class="fas fa-user-minus text-red-500 mr-2"></i>
+                                {% endif %}
+                                <span class="text-sm text-gray-400">{{ notification.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                                {% if not notification.is_read %}
+                                    <span class="ml-2 px-2 py-0.5 text-xs bg-blue-600 text-white rounded-full">Новое</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-gray-200">{{ notification.message }}</p>
+                            
+                            {% if notification.task_id %}
+                                <a href="{{ url_for('task_blueprint.task_detail', task_id=notification.task_id) }}" class="mt-2 inline-block text-sm text-blue-400 hover:text-blue-300">
+                                    <i class="fas fa-external-link-alt mr-1"></i> Перейти к задаче
+                                </a>
+                            {% endif %}
+                        </div>
+                        <button 
+                            class="mark-read-btn ml-4 text-gray-400 hover:text-white" 
+                            data-notification-id="{{ notification.id }}" 
+                            {% if notification.is_read %}disabled{% endif %}
+                        >
+                            <i class="fas {{ 'fa-check text-gray-600' if notification.is_read else 'fa-check' }}"></i>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-[#2a2a2a] p-6 rounded-lg shadow-md text-center">
+            <i class="fas fa-bell-slash text-4xl text-gray-500 mb-4"></i>
+            <p class="text-gray-400">У вас нет уведомлений</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчик для отметки одного уведомления как прочитанного
+        const markReadButtons = document.querySelectorAll('.mark-read-btn');
+        markReadButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const notificationId = this.dataset.notificationId;
+                fetch(`/notification/mark_as_read/${notificationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Визуально отметить как прочитанное
+                        const notificationElement = this.closest('.border-blue-500');
+                        if (notificationElement) {
+                            notificationElement.classList.remove('border-blue-500');
+                            notificationElement.classList.add('border-gray-600');
+                        }
+                        
+                        // Изменить иконку кнопки
+                        this.querySelector('i').classList.add('text-gray-600');
+                        this.disabled = true;
+                        
+                        // Удалить метку "Новое"
+                        const newBadge = this.closest('.bg-[#2a2a2a]').querySelector('.bg-blue-600');
+                        if (newBadge) {
+                            newBadge.remove();
+                        }
+                        
+                        // Обновить счетчик в навигации
+                        updateNotificationCount();
+                    }
+                });
+            });
+        });
+        
+        // Обработчик для отметки всех уведомлений как прочитанных
+        const markAllForm = document.getElementById('mark-all-form');
+        if (markAllForm) {
+            markAllForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                fetch('/notification/mark_all_as_read', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Обновить страницу для отображения изменений
+                        window.location.reload();
+                    }
+                });
+            });
+        }
+        
+        // Функция для обновления счетчика уведомлений
+        function updateNotificationCount() {
+            fetch('/notification/count')
+                .then(response => response.json())
+                .then(data => {
+                    const countElement = document.getElementById('notification-count');
+                    if (countElement) {
+                        if (data.count > 0) {
+                            countElement.textContent = data.count;
+                            countElement.classList.remove('hidden');
+                        } else {
+                            countElement.classList.add('hidden');
+                        }
+                    }
+                });
+        }
+    });
+</script>
+{% endblock %}

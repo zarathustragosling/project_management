@@ -5,13 +5,13 @@
 <div class="max-w-7xl mx-auto px-4 py-8 space-y-8">
 
   <!-- Заголовок -->
-  <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-    <h1 class="text-3xl font-bold text-white">📊 Диаграмма Ганта</h1>
+  <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4" data-aos="fade-left">
+    <h1 class="text-3xl font-bold ">Диаграмма Ганта</h1>
 
-    <div class="flex items-center gap-3">
-      <label for="projectSelect" class="text-white text-sm font-medium">Выберите проект:</label>
+    <div class="flex items-center gap-3" data-aos="fade-left" data-aos-delay="150">
+      <label for="projectSelect" class="text-zinc-400 text-sm font-medium">Выберите проект:</label>
       <select id="projectSelect"
-              class="bg-slate-800 text-white border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
+              class="bg-zinc-800 text-white border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-300 hover:border-zinc-400">
         {% for project in projects %}
           <option value="{{ project.id }}">{{ project.name }}</option>
         {% endfor %}
@@ -21,30 +21,32 @@
 
   <!-- Индикатор загрузки -->
   <div id="loading-indicator" class="hidden flex justify-center items-center py-10">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-400"></div>
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-500 shadow-lg"></div>
+    <span class="ml-3 text-gray-400 animate-pulse">Загрузка данных...</span>
   </div>
 
   <!-- Контейнер диаграммы -->
   <div id="gantt-container"
-       class="rounded-xl bg-slate-900 border border-slate-700 shadow-xl p-4 overflow-x-auto transition-all duration-300"
+       class="rounded-xl bg-zinc-900 border border-gray-700 shadow-xl p-4 overflow-x-auto transition-all duration-300"
+       data-aos="fade-up" data-aos-delay="100"
        style="min-height: 500px;"></div>
        
   <!-- Легенда -->
-  <div class="flex flex-wrap gap-4 justify-center mt-4">
-    <div class="flex items-center gap-2">
-      <div class="w-4 h-4 rounded bg-red-600"></div>
+  <div class="flex flex-wrap gap-4 justify-center mt-4" data-aos="fade-up" data-aos-delay="200">
+    <div class="flex items-center gap-2 hover:transform hover:scale-105 transition-all duration-300">
+      <div class="w-4 h-4 rounded bg-gray-700 border-l-4 border-l-red-500"></div>
       <span class="text-sm text-gray-300">Высокий приоритет</span>
     </div>
-    <div class="flex items-center gap-2">
-      <div class="w-4 h-4 rounded bg-amber-500"></div>
+    <div class="flex items-center gap-2 hover:transform hover:scale-105 transition-all duration-300">
+      <div class="w-4 h-4 rounded bg-gray-700 border-l-4 border-l-amber-400"></div>
       <span class="text-sm text-gray-300">Средний приоритет</span>
     </div>
-    <div class="flex items-center gap-2">
-      <div class="w-4 h-4 rounded bg-green-600"></div>
+    <div class="flex items-center gap-2 hover:transform hover:scale-105 transition-all duration-300">
+      <div class="w-4 h-4 rounded bg-gray-700 border-l-4 border-l-green-500"></div>
       <span class="text-sm text-gray-300">Низкий приоритет</span>
     </div>
-    <div class="flex items-center gap-2">
-      <div class="w-4 h-4 rounded bg-blue-500"></div>
+    <div class="flex items-center gap-2 hover:transform hover:scale-105 transition-all duration-300">
+      <div class="w-4 h-4 rounded bg-gray-600"></div>
       <span class="text-sm text-gray-300">Текущая дата</span>
     </div>
   </div>
@@ -56,6 +58,13 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    // Инициализация AOS для анимаций при прокрутке
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: false,
+      mirror: true
+    });
     const container = document.getElementById("gantt-container");
     const select = document.getElementById("projectSelect");
     const loadingIndicator = document.getElementById("loading-indicator");
@@ -78,12 +87,12 @@
       data.forEach((t, index) => {
         groups.add({ 
           id: index, 
-          content: `<div class="text-sm text-gray-400 py-1">${t.name}</div>` 
+          content: `<div class="text-sm text-gray-400 py-1 hover:text-gray-200 transition-colors duration-300">${t.name}</div>` 
         });
 
         items.add({
           id: t.id,
-          content: `<div class="gantt-item-content">
+          content: `<div class="gantt-item-content fade-in-element" style="animation-delay: ${index * 0.05}s">
                       <div class="gantt-item-title">${t.name}</div>
                     </div>`,
           start: t.start,
@@ -267,23 +276,32 @@
   }
   
   .vis-item.vis-selected {
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(150, 150, 150, 0.5) !important;
   }
   
   /* Приоритеты задач */
   .vis-item.priority-высокий {
-    background-color: rgba(220, 38, 38, 0.8) !important;
-    border-color: #ef4444 !important;
+    background-color: #4a4a4a !important;
+    border-left: 4px solid #ef4444 !important;
+    border-top: 1px solid #555555 !important;
+    border-right: 1px solid #555555 !important;
+    border-bottom: 1px solid #555555 !important;
   }
   
   .vis-item.priority-средний {
-    background-color: rgba(245, 158, 11, 0.8) !important;
-    border-color: #fbbf24 !important;
+    background-color: #4a4a4a !important;
+    border-left: 4px solid #fbbf24 !important;
+    border-top: 1px solid #555555 !important;
+    border-right: 1px solid #555555 !important;
+    border-bottom: 1px solid #555555 !important;
   }
   
   .vis-item.priority-низкий {
-    background-color: rgba(22, 163, 74, 0.8) !important;
-    border-color: #22c55e !important;
+    background-color: #4a4a4a !important;
+    border-left: 4px solid #22c55e !important;
+    border-top: 1px solid #555555 !important;
+    border-right: 1px solid #555555 !important;
+    border-bottom: 1px solid #555555 !important;
   }
   
   /* Содержимое элементов */
@@ -308,14 +326,14 @@
   
   /* Текущая дата */
   .vis-current-time {
-    background-color: #3b82f6 !important;
+    background-color: #777777 !important;
     width: 2px !important;
   }
   
   /* Тултипы */
   .vis-tooltip {
-    background-color: #1e293b !important;
-    border: 1px solid #334155 !important;
+    background-color: #2a2a2a !important;
+    border: 1px solid #3a3a3a !important;
     border-radius: 6px !important;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
     color: #f8fafc !important;
@@ -346,7 +364,7 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background-color: rgba(59, 130, 246, 0.3);
+    background-color: rgba(150, 150, 150, 0.3);
     transform: translate(-50%, -50%);
     pointer-events: none;
     animation: click-animation 0.3s ease-out forwards;

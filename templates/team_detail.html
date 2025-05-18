@@ -18,21 +18,21 @@
     </div>
     <div class="ml-auto flex gap-2">
       {% if current_user.is_teamlead() %}
-  <a href="{{ url_for('team.edit_team') }}" class="btn">Редактировать команду</a>
+  <a href="{{ url_for('team_blueprint.edit_team') }}" class="btn">Редактировать команду</a>
 {% endif %}
 
-      <form method="POST" action="{{ url_for('team.leave_team') }}">
-        <button class="btn btn-danger">🚪 Выйти</button>
+      <form method="POST" action="{{ url_for('team_blueprint.leave_team') }}">
+        <button class="btn btn-danger">Выйти</button>
       </form>
     </div>
   </div>
 
   <!-- 📨 Код приглашения -->
-  <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
+  <div class="bg-zinc-800 p-4 rounded-xl border border-slate-700 space-y-2">
     <h2 class="text-lg font-semibold text-white">📨 Код приглашения</h2>
     <div class="flex gap-3 items-center">
       <input id="inviteCode" type="text" value="{{ team.invite_code }}" readonly
-             class="w-full bg-gray-900 text-white px-4 py-2 rounded border border-gray-600">
+             class="w-full bg-zinc-700 text-white px-4 py-2 rounded border border-gray-600">
       <button type="button" onclick="copyInviteCode()" id="copyButton" class="btn btn-sm">📋 Копировать</button>
     </div>
     <p class="text-sm text-slate-400">Отправьте код другим, чтобы они присоединились к вашей команде.</p>
@@ -43,23 +43,37 @@
     <h2 class="text-xl font-semibold text-white mb-3">Участники</h2>
     <ul class="space-y-2">
       {% for user in team.users %}
-        <li class="bg-slate-700 p-3 rounded flex justify-between items-center gap-4">
+        <li class="bg-zinc-600 p-3 rounded flex justify-between items-center gap-4">
           <!-- Аватар -->
           <img src="{{ user.avatar or url_for('static', filename='default_avatar.png') }}"
                class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
           
           <!-- Имя пользователя -->
-          <a href="{{ url_for('user.view_profile', user_id=user.id) }}" 
-             class="text-white hover:text-blue-400 flex-1 min-w-0 truncate">
+          <a href="{{ url_for('user_blueprint.view_profile', user_id=user.id) }}" 
+             class="text-white hover:text-gray-300 flex-1 min-w-0 truncate">
               {{ user.username }}
           </a>
           
           <!-- Роль -->
-          <p class="text-xs text-slate-400 w-24 text-center">{{ user.role.name }}</p>
+          {% if current_user.is_teamlead() and user.id != current_user.id %}
+            <form method="POST" action="{{ url_for('team_blueprint.add_team_member', team_id=team.id) }}" class="flex items-center w-40">
+              <input type="hidden" name="user_id" value="{{ user.id }}">
+              <select name="role_id" class="bg-slate-800 text-xs text-white border border-slate-600 rounded p-1 w-full" onchange="this.form.submit()">
+                <option value="">Без роли</option>
+                {% for role in roles %}
+                  {% if role.name != 'Admin' and role.name != 'TeamLead' %}
+                    <option value="{{ role.id }}" {% if user.role and user.role.id == role.id %}selected{% endif %}>{{ role.name }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </form>
+          {% else %}
+            <p class="text-xs text-slate-400 w-24 text-center">{{ user.role.name if user.role else 'Без роли' }}</p>
+          {% endif %}
           
           <!-- Кнопка удаления -->
           {% if current_user.is_teamlead() and user.id != current_user.id %}
-          <a href="{{ url_for('team.remove_member', team_id=team.id, user_id=user.id) }}"
+          <a href="{{ url_for('team_blueprint.remove_team_member', team_id=team.id, user_id=user.id) }}"
              class="text-red-400 hover:underline text-sm flex-shrink-0">
              Удалить
           </a>
@@ -81,12 +95,12 @@
       // Визуальное подтверждение
       button.innerHTML = '✓ Скопировано';
       button.classList.add('bg-green-600');
-      button.classList.remove('bg-blue-600');
+      button.classList.remove('bg-gray-600');
       
       // Возвращаем исходный вид через 2 секунды
       setTimeout(() => {
         button.innerHTML = '📋 Копировать';
-        button.classList.add('bg-blue-600');
+        button.classList.add('bg-gray-600');
         button.classList.remove('bg-green-600');
       }, 2000);
       

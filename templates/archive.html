@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Архив задач{% endblock %}
+
+{% block content %}
+<div class="hidden">
+  <div class="w-10 h-10 rounded-full object-cover"></div>
+  <div class="text-sm text-xs text-white text-gray-400 text-gray-300"></div>
+  <div class="hover:underline hover:text-gray-300"></div>
+  <div class="bg-grey-800 bg-gray-700 bg-gray-800 bg-gray-900"></div>
+  <div class="p-4 rounded-lg mt-2 mb-4 space-y-4"></div>
+  <div class="ml-10 ml-6 border-l border-slate-600 pl-4"></div>
+  <div class="flex items-start gap-3"></div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-white">📦 Архив задач</h1>
+    <a href="{{ url_for('task_blueprint.kanban') }}"
+       class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2 rounded-lg shadow transition text-sm font-medium">
+      ← Вернуться к канбан-доске
+    </a>
+  </div>
+
+  {% if tasks %}
+  <div class="bg-zinc-800 rounded-xl p-6 shadow">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-700">
+        <thead>
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Название</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Проект</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Статус</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Приоритет</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Дата создания</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Действия</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700 bg-zinc-900">
+          {% for task in tasks %}
+          <tr class="hover:bg-zinc-800 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <a href="{{ url_for('task_blueprint.task_detail', task_id=task.id) }}" class="text-white hover:underline font-medium">
+                {{ task.title }}
+              </a>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+              <a href="{{ url_for('project_blueprint.project_detail', project_id=task.project.id) }}" class="hover:underline">
+                {{ task.project.name }}
+              </a>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <span class="px-2 py-1 text-xs rounded-full
+                {% if task.status.value == 'To Do' %}
+                  bg-blue-900 text-blue-200
+                {% elif task.status.value == 'In Progress' %}
+                  bg-yellow-900 text-yellow-200
+                {% elif task.status.value == 'Done' %}
+                  bg-green-900 text-green-200
+                {% endif %}">
+                {{ task.status.value }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+              <span class="
+                {% if task.priority == 'Высокий' %}
+                  text-red-400
+                {% elif task.priority == 'Средний' %}
+                  text-yellow-400
+                {% elif task.priority == 'Низкий' %}
+                  text-green-400
+                {% endif %}">
+                {{ task.priority }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+              {{ task.created_at.strftime('%d.%m.%Y') }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+              <form method="POST" action="{{ url_for('task_blueprint.restore_task', task_id=task.id) }}" class="inline">
+                <button type="submit" class="text-green-400 hover:text-green-300 transition">
+                  Восстановить
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="bg-zinc-800 rounded-xl p-8 shadow text-center">
+    <p class="text-gray-400 text-lg">В архиве пока нет задач</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

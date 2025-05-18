@@ -1,5 +1,6 @@
 /* Стили для PDF-отчетов */
 @page {
+    size: A4 landscape; /* Альбомная ориентация */
     margin: 2cm;
     @top-center {
         content: "Отчет по проекту";
@@ -23,6 +24,7 @@ body {
 .report-header {
     text-align: center;
     margin-bottom: 2cm;
+    page-break-after: avoid;
 }
 
 .report-title {
@@ -30,18 +32,21 @@ body {
     font-weight: bold;
     margin-bottom: 0.5cm;
     color: #2563eb;
+    text-align: center;
 }
 
 .report-subtitle {
     font-size: 14pt;
     margin-bottom: 0.3cm;
     color: #555;
+    text-align: center;
 }
 
 .report-meta {
     margin-top: 1cm;
     font-size: 11pt;
     color: #666;
+    text-align: center;
 }
 
 .report-section {
@@ -61,6 +66,9 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 1cm;
+    
+    font-size: 8pt; /* Уменьшенный размер шрифта */
+    word-wrap: break-word;
 }
 
 th {
@@ -70,28 +78,41 @@ th {
     text-align: left;
     padding: 0.3cm;
     border: 1px solid #ccc;
+    overflow-wrap: break-word; /* Перенос длинных слов */
 }
 
 td {
     padding: 0.3cm;
     border: 1px solid #ccc;
+    overflow-wrap: break-word; /* Перенос длинных слов */
 }
 
 tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
+/* Настройка ширины столбцов для таблицы задач */
+.report-section table th:nth-child(1) { width: 20%; } /* Название */
+.report-section table th:nth-child(2) { width: 10%; } /* Статус */
+.report-section table th:nth-child(3) { width: 15%; } /* Постановщик */
+.report-section table th:nth-child(4) { width: 15%; } /* Ответственный */
+.report-section table th:nth-child(5) { width: 12%; } /* Срок */
+.report-section table th:nth-child(6) { width: 12%; } /* Начало */
+.report-section table th:nth-child(7) { width: 12%; } /* Завершение */
+
 .stats-container {
-    display: flex;
-    justify-content: space-between;
+    display: table;
+    width: 80%;
+    table-layout: fixed;
     margin-bottom: 1cm;
 }
 
 .stat-box {
+    display: table-cell;
     border: 1px solid #ccc;
     padding: 0.5cm;
     text-align: center;
-    width: 22%;
+    width: 25%;
 }
 
 .stat-value {
@@ -141,4 +162,24 @@ tr:nth-child(even) {
     width: 100%;
     height: 300px;
     margin-top: 0.5cm;
+    margin-bottom: 1cm;
+    text-align: center;
+    page-break-inside: avoid; /* Предотвращает разрыв графика между страницами */
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.chart-container img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.gantt-chart {
+    page-break-inside: avoid;
+    margin-top: 0.5cm;
+    margin-bottom: 1cm;
+    width: 100%;
+    overflow: hidden;
 }

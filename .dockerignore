@@ -1,0 +1,25 @@
+# Виртуальное окружение
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Локальные файлы разработки
+.env
+.git
+.gitignore
+
+# Файлы Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Документация
+deploy.md
+README.md
+
+# Временные файлы
+*.log
+*.swp
+*.swo
+.DS_Store

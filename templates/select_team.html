@@ -7,12 +7,12 @@
   <p class="text-center text-slate-400">Выберите способ присоединиться к команде:</p>
 
   <div class="flex flex-col gap-4">
-    <a href="{{ url_for('team.create_team') }}"
+    <a href="{{ url_for('team_blueprint.create_team') }}"
        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-center font-medium">
       ✅ Создать новую команду
     </a>
 
-    <form method="POST" action="{{ url_for('team.join_team') }}"
+    <form method="POST" action="{{ url_for('team_blueprint.join_team') }}"
           class="bg-slate-800 p-4 rounded-lg space-y-3 border border-slate-700">
       <label for="invite_code" class="block text-white text-sm font-medium">🔑 Код приглашения</label>
       <input type="text" id="invite_code" name="invite_code" placeholder="Вставьте код приглашения"

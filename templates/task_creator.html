@@ -8,47 +8,39 @@
   </h1>
 
   <form method="POST"
-        action="{{ url_for('task.edit_task', task_id=task.id) if is_edit else url_for('task.task_creator') }}"
-        class="space-y-6 bg-slate-800 p-6 rounded-xl shadow" enctype="multipart/form-data">
+        action="{{ url_for('task_blueprint.edit_task', task_id=task.id) if is_edit else url_for('task_blueprint.task_creator') }}"
+        class="space-y-6 bg-zinc-700 p-6 rounded-xl shadow" enctype="multipart/form-data">
 
     <div>
       <label for="title" class="block text-sm font-medium text-white mb-1">Название</label>
       <input type="text" name="title" id="title" required
              value="{{ task.title if is_edit else '' }}"
-             class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-blue-500 focus:outline-none">
+             class="w-full p-3 rounded-lg bg-zinc-900 text-white border border-gray-700 focus:border-white-500 focus:outline-none">
     </div>
 
     <div>
       <label for="description" class="block text-sm font-medium text-white mb-1">Описание</label>
       <textarea name="description" id="description" rows="4"
-                class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700 focus:border-blue-500">{{ task.description if is_edit else '' }}</textarea>
+                class="w-full p-3 rounded-lg bg-zinc-900 text-white border border-gray-700 focus:border-white-500">{{ task.description if is_edit else '' }}</textarea>
     </div>
 
     <div>
       <label for="priority" class="block text-sm font-medium text-white mb-1">Приоритет</label>
       <select name="priority" id="priority"
-              class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+              class="w-full p-3 rounded-lg bg-zinc-900 text-white border border-gray-700">
         {% for p in ['Высокий', 'Средний', 'Низкий'] %}
           <option value="{{ p }}" {% if is_edit and task.priority == p %}selected{% endif %}>{{ p }}</option>
         {% endfor %}
       </select>
     </div>
 
-    <div>
-      <label for="status" class="block text-sm font-medium text-white mb-1">Статус</label>
-      <select name="status" id="status"
-              class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
-        {% for st in ['To Do', 'In Progress', 'Done'] %}
-          <option value="{{ st }}" {% if is_edit and task.status.value == st %}selected{% endif %}>{{ st }}</option>
-        {% endfor %}
-      </select>
-    </div>
+    
 
     {% if not is_edit %}
     <div>
       <label for="project_id" class="block text-sm font-medium text-white mb-1">Проект</label>
       <select name="project_id" id="project_id" required
-              class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+              class="w-full p-3 rounded-lg bg-zinc-900 text-white border border-gray-700">
         {% for project in team_projects %}
           <option value="{{ project.id }}">{{ project.name }}</option>
         {% endfor %}
@@ -57,7 +49,7 @@
     {% else %}
     <div>
       <label class="block text-sm font-medium text-white mb-1">Проект</label>
-      <p class="p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+      <p class="p-3 rounded-lg bg-zinc-900 text-white border border-gray-700">
         {{ task.project.name }}
       </p>
     </div>
@@ -66,7 +58,7 @@
     <div>
       <label for="assigned_to" class="block text-sm font-medium text-white mb-1">Ответственный</label>
       <select name="assigned_to" id="assigned_to"
-              class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+              class="w-full p-3 rounded-lg bg-zinc-900 text-white border border-gray-700">
         <option value="">Не назначен</option>
         {% for user in users %}
           <option value="{{ user.id }}" {% if is_edit and task.assigned_to == user.id %}selected{% endif %}>
@@ -76,23 +68,30 @@
       </select>
     </div>
 
-    <div>
-      <label for="deadline" class="block text-sm font-medium text-white mb-1">Дедлайн</label>
-      <input type="date" name="deadline" id="deadline"
-             value="{{ task.deadline.strftime('%Y-%m-%d') if is_edit and task.deadline else '' }}"
-             class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
-    </div>
 
     <div>
       <label for="created_at" class="block text-sm font-medium text-white mb-1">Дата создания</label>
       <input type="date" name="created_at" id="created_at"
              value="{% if is_edit and task.created_at %}{{ task.created_at.strftime('%Y-%m-%d') }}{% else %}{{ current_date }}{% endif %}"
-             class="w-full p-3 rounded-lg bg-gray-900 text-white border border-gray-700">
+             class="w-full p-3 rounded-lg bg-zinc-900 text-white border border-gray-700">
     </div>
+    
+
+    <div>
+      <label for="deadline" class="block text-sm font-medium text-white mb-1">Дедлайн</label>
+      <input type="date" name="deadline" id="deadline"
+       value="{% if is_edit and task.deadline %}{{ task.deadline.strftime('%Y-%m-%d') }}{% else %}{{ next_date }}{% endif %}"
+       min="{{ next_date }}"
+       class="w-full p-3 rounded-lg bg-zinc-900 text-white border border-gray-700">
+
+
+    </div>
+
+  
 
     <div class="pt-4">
       <button type="submit"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium text-sm transition">
+              class="bg-zinc-500 hover:bg-zinc-900 text-white px-6 py-3 rounded-lg font-medium text-sm transition">
         {{ '💾 Сохранить изменения' if is_edit else '✅ Создать задачу' }}
       </button>
     </div>
@@ -116,5 +115,35 @@
         });
       });
   });
+
+  const createdAtInput = document.getElementById("created_at");
+  const deadlineInput = document.getElementById("deadline");
+
+  function updateDeadlineMin() {
+    const createdDate = new Date(createdAtInput.value);
+    if (isNaN(createdDate.getTime())) return;
+
+    // Добавляем 1 день
+    const minDeadlineDate = new Date(createdDate);
+    minDeadlineDate.setDate(minDeadlineDate.getDate() + 1);
+
+    // Форматируем в YYYY-MM-DD
+    const yyyy = minDeadlineDate.getFullYear();
+    const mm = String(minDeadlineDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(minDeadlineDate.getDate()).padStart(2, '0');
+    const minDateStr = `${yyyy}-${mm}-${dd}`;
+
+    // Устанавливаем ограничения и значение
+    deadlineInput.min = minDateStr;
+
+    // Если текущий дедлайн пустой или раньше min — устанавливаем его в min
+    if (!deadlineInput.value || deadlineInput.value < minDateStr) {
+      deadlineInput.value = minDateStr;
+    }
+  }
+
+  // Вызываем при загрузке страницы и при изменении даты создания
+  window.addEventListener("load", updateDeadlineMin);
+  createdAtInput.addEventListener("change", updateDeadlineMin);
 </script>
 {% endblock %}

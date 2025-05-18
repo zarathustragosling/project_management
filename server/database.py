@@ -45,6 +45,9 @@ class User(db.Model, UserMixin):
     role = db.relationship('Role', back_populates='users')
     is_admin = db.Column(db.Boolean, default=False)
     
+    # Отношение к уведомлениям
+    notifications = db.relationship('Notification', backref='user', lazy=True)
+    
   
 
     def has_role(self, role_name: str):
@@ -89,6 +92,8 @@ class Task(db.Model):
     assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     deadline = db.Column(db.Date)
+    position = db.Column(db.Integer, default=0)  # Позиция задачи в колонке
+    is_archived = db.Column(db.Boolean, default=False)  # Флаг архивирования задачи
     comments = db.relationship('Comment', back_populates='task', lazy='joined')
     project = db.relationship('Project', back_populates='tasks')  # Matches back_populates in Project
     assigned_user = db.relationship('User', foreign_keys=[assigned_to], backref='assigned_tasks')
@@ -140,5 +145,31 @@ class CommentAttachment(db.Model):
     filename = db.Column(db.String(200), nullable=False)
     filepath = db.Column(db.String(300), nullable=False)
     comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'), nullable=False)
+
+
+class NotificationType(enum.Enum):
+    TASK_DEADLINE = "task_deadline"
+    TASK_ASSIGNED = "task_assigned"
+    TEAM_MEMBER_JOINED = "team_member_joined"
+    TEAM_MEMBER_LEFT = "team_member_left"
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    type = db.Column(PgEnum(NotificationType, name='notification_type'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False)
+    
+    # Дополнительные ссылки на связанные объекты
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
+    task = db.relationship('Task', backref='notifications')
+    
+    # Метаданные (хранятся в JSON формате)
+    notification_data = db.Column(db.JSON, nullable=True)
+    
+    def mark_as_read(self):
+        self.is_read = True
+        db.session.commit()
 
 

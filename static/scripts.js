@@ -3,12 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Инициализация всех компонентов с анимациями
   initializeAnimations();
 
-  // Функция для подсветки упоминаний пользователей
-  function highlightMentions(text) {
-    return text.replace(/<@(\d+):([\wА-яёЁ.-]+)>/g, (_, id, name) =>
-      `<a href="/user/${id}" class="text-blue-400 hover:underline transition-colors duration-300">@${name}</a>`
-    );
-  }
+
 
   // === Редактирование задачи ===
   const form = document.getElementById('editTaskForm');
@@ -297,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => commentForm.classList.remove('ring-2', 'ring-gray-500'), 1000);
       }
       
-      textarea.value = `<@${userid}:${username}> `;
+      textarea.value = '';
       parentIdInput.value = commentid;
       textarea.focus();
       
@@ -331,6 +326,70 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // === Обработчики кнопок удаления комментариев ===
+  function attachDeleteButtonHandler(btn) {
+    btn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      
+      if (!confirm('Вы уверены, что хотите удалить этот комментарий?')) {
+        return;
+      }
+      
+      const commentId = btn.dataset.commentId;
+      const commentThread = document.querySelector(`[data-comment-id="${commentId}"]`);
+      
+      try {
+        const response = await fetch(`/comment/${commentId}/delete`, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Анимация удаления комментария
+          commentThread.style.transition = 'all 0.5s ease-out';
+          commentThread.style.opacity = '0';
+          commentThread.style.transform = 'translateY(-10px)';
+          
+          setTimeout(() => {
+            commentThread.remove();
+            showNotification('Комментарий успешно удален', 'success');
+          }, 500);
+        } else {
+          showNotification(data.error || 'Ошибка при удалении комментария', 'error');
+        }
+      } catch (error) {
+        console.error('Ошибка при удалении комментария:', error);
+        showNotification('Произошла ошибка при удалении комментария', 'error');
+      }
+    });
+  }
+  
+  // Добавляем обработчики для существующих кнопок удаления
+  document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+    attachDeleteButtonHandler(btn);
+  });
+  
+  // Делегирование событий для динамически добавленных кнопок удаления
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('delete-comment-btn') || 
+        e.target.closest('.delete-comment-btn')) {
+      const btn = e.target.classList.contains('delete-comment-btn') ? 
+                 e.target : e.target.closest('.delete-comment-btn');
+      
+      // Проверяем, есть ли уже обработчик
+      const hasHandler = btn.getAttribute('data-has-handler');
+      if (!hasHandler) {
+        attachDeleteButtonHandler(btn);
+        btn.setAttribute('data-has-handler', 'true');
+        btn.click(); // Имитируем клик для активации удаления
+      }
+    }
+  });
+  
   // === AJAX отправка комментария ===
   const commentForm = document.getElementById("commentForm");
   if (commentForm) {
@@ -443,23 +502,34 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
   
+  // Код для Drag and Drop перенесен в kanban.html
+  
   // === Вспомогательные функции ===
   
   // Инициализация анимаций
   function initializeAnimations() {
-    // Анимация появления элементов при прокрутке
-    const animatedElements = document.querySelectorAll('.task-card, .project-list li, .kanban-column');
-    if (animatedElements.length > 0) {
-      animatedElements.forEach((el, index) => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        
-        setTimeout(() => {
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-        }, 100 + (index * 50)); // Последовательная анимация элементов
-      });
+    // Анимация заголовка
+    const title = document.querySelector('.kanban-title');
+    if (title) {
+      setTimeout(() => {
+        title.classList.add('visible');
+      }, 100);
+    }
+
+    // Анимация колонок
+    const columns = document.querySelectorAll('.kanban-column');
+    columns.forEach((column, index) => {
+      setTimeout(() => {
+        column.classList.add('visible');
+      }, 600 + (index * 200));
+    });
+
+    // Анимация кнопки создания задачи
+    const createButton = document.querySelector('.create-task-btn');
+    if (createButton) {
+      setTimeout(() => {
+        createButton.classList.add('visible');
+      }, 1400);
     }
     
     // Анимация наведения для кнопок
@@ -509,4 +579,200 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 3000);
   }
 });
+
+
+// === AJAX отправка сообщений в ленту команды ===
+const feedForm = document.querySelector('form[action*="post_feed_comment"]');
+if (feedForm) {
+feedForm.addEventListener('submit', function(e) {
+e.preventDefault();
+
+// Анимация кнопки отправки
+const submitBtn = feedForm.querySelector('button');
+if (submitBtn) {
+submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Отправка...';
+submitBtn.disabled = true;
+}
+
+const formData = new FormData(feedForm);
+
+fetch(feedForm.action, {
+method: 'POST',
+headers: {
+  'X-Requested-With': 'XMLHttpRequest'
+},
+body: formData
+})
+.then(response => response.json())
+.then(data => {
+if (data.success) {
+// Очищаем поле ввода
+feedForm.querySelector('input[name="content"]').value = '';
+
+// Получаем текущее время для отображения
+const now = new Date();
+const formattedDate = now.toLocaleDateString('ru-RU') + ' ' + 
+                    now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+
+// Создаем элемент нового сообщения
+const newMessage = document.createElement('li');
+newMessage.className = 'bg-zinc-700 p-3 rounded-lg shadow text-sm opacity-0 transform translate-y-4';
+
+// Заполняем содержимое сообщения
+newMessage.innerHTML = `
+<a href="/user/${data.comment.author.id}" class="text-white hover:text-gray-300">
+  ${data.comment.author.username}
+</a>
+<p class="text-slate-300 mt-1">${data.comment.content}</p>
+<div class="text-xs text-gray-500 mt-1">${formattedDate}</div>
+`;
+
+// Находим список сообщений
+// Используем более надежный способ поиска списка сообщений
+const feedHeading = Array.from(document.querySelectorAll('h2')).find(h => h.textContent.includes('Лента команды'));
+if (!feedHeading) {
+console.error('Не удалось найти заголовок ленты команды');
+return;
+}
+
+// Находим список после заголовка и формы
+let feedList = feedHeading.nextElementSibling;
+if (feedList.tagName.toLowerCase() === 'form') {
+feedList = feedList.nextElementSibling;
+}
+
+// Если список пуст, удаляем сообщение о пустом списке
+if (feedList.tagName.toLowerCase() === 'p' && feedList.textContent.includes('Сообщений пока нет')) {
+// Создаем новый список
+const newList = document.createElement('ul');
+newList.className = 'space-y-3';
+newList.appendChild(newMessage);
+feedList.parentNode.replaceChild(newList, feedList);
+} else {
+// Добавляем сообщение в начало списка
+feedList.insertBefore(newMessage, feedList.firstChild);
+}
+
+// Анимируем появление сообщения
+setTimeout(() => {
+newMessage.classList.remove('opacity-0', 'transform', 'translate-y-4');
+newMessage.classList.add('transition-all', 'duration-500', 'ease-out', 'opacity-100');
+}, 10);
+
+// Показываем уведомление об успешной отправке
+showNotification('Сообщение успешно отправлено', 'success');
+} else {
+showNotification(data.error || 'Ошибка при отправке сообщения', 'error');
+}
+})
+.catch(error => {
+console.error('Ошибка при отправке сообщения:', error);
+showNotification('Произошла ошибка при отправке сообщения', 'error');
+})
+.finally(() => {
+// Восстанавливаем кнопку
+if (submitBtn) {
+submitBtn.innerHTML = 'Отправить';
+submitBtn.disabled = false;
+}
+});
+});
+  }
+  
+  // === Визуальное восстановление дерева комментариев ===
+  document.querySelectorAll('.comment-thread[data-is-reply="1"]').forEach(reply => {
+    const parentId = reply.dataset.parentId;
+    const parent = document.querySelector(`.comment-thread[data-is-reply="0"][data-comment-id="${parentId}"]`);
+  
+    if (parent) {
+      // Добавляем reply-container если ещё не добавлен
+      let replyContainer = parent.querySelector('.space-y-4');
+      if (!replyContainer) {
+        replyContainer = document.createElement('div');
+        replyContainer.classList.add('mt-4', 'space-y-4');
+        parent.appendChild(replyContainer);
+      }
+  
+      // Вставляем ответ внутрь reply-container
+      replyContainer.appendChild(reply);
+    }
+  });
+  
+  // Код для Drag and Drop перенесен в kanban.html
+  
+  // === Вспомогательные функции ===
+  
+  // Инициализация анимаций
+  function initializeAnimations() {
+    // Анимация заголовка
+    const title = document.querySelector('.kanban-title');
+    if (title) {
+      setTimeout(() => {
+        title.classList.add('visible');
+      }, 100);
+    }
+
+    // Анимация колонок
+    const columns = document.querySelectorAll('.kanban-column');
+    columns.forEach((column, index) => {
+      setTimeout(() => {
+        column.classList.add('visible');
+      }, 600 + (index * 200));
+    });
+
+    // Анимация кнопки создания задачи
+    const createButton = document.querySelector('.create-task-btn');
+    if (createButton) {
+      setTimeout(() => {
+        createButton.classList.add('visible');
+      }, 1400);
+    }
+    
+    // Анимация наведения для кнопок
+    document.querySelectorAll('.btn, .btn-sm, .btn-primary').forEach(btn => {
+      btn.addEventListener('mouseenter', () => {
+        btn.style.transform = 'translateY(-2px)';
+      });
+      
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'translateY(0)';
+      });
+    });
+  }
+  
+  // Функция для отображения уведомлений
+  function showNotification(message, type = 'info') {
+    // Создаем элемент уведомления
+    const notification = document.createElement('div');
+    notification.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-all duration-500 ease-out translate-y-20 opacity-0`;
+    
+    // Устанавливаем цвет в зависимости от типа
+    if (type === 'success') {
+      notification.classList.add('bg-green-600', 'text-white');
+      notification.innerHTML = `<i class="fas fa-check-circle mr-2"></i> ${message}`;
+    } else if (type === 'error') {
+      notification.classList.add('bg-red-600', 'text-white');
+      notification.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${message}`;
+    } else {
+      notification.classList.add('bg-gray-700', 'text-white');
+      notification.innerHTML = `<i class="fas fa-info-circle mr-2"></i> ${message}`;
+    }
+    
+    // Добавляем на страницу
+    document.body.appendChild(notification);
+    
+    // Анимируем появление
+    setTimeout(() => {
+      notification.classList.remove('translate-y-20', 'opacity-0');
+    }, 10);
+    
+    // Автоматически скрываем через 3 секунды
+    setTimeout(() => {
+      notification.classList.add('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        notification.remove();
+      }, 500);
+    }, 3000);
+  }
+;
 

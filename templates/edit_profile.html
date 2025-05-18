@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+<div class="container max-w-xl mx-auto mt-10 space-y-8">
+  <h1 class="text-2xl font-bold">Редактирование профиля</h1>
+
+  <form action="{{ url_for('user_blueprint.edit_profile') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+
+    <div>
+      <label class="block text-sm mb-1">Аватар</label>
+      <img src="{{ current_user.avatar or url_for('static', filename='default_avatar.png') }}" class="w-24 h-24 rounded-full mb-2 object-cover" />
+      <input type="file" name="avatar" class="text-white">
+    </div>
+
+    <div>
+      <label class="block text-sm mb-1">Имя пользователя</label>
+      <input type="text" name="username" value="{{ current_user.username }}"
+             class="w-full bg-gray-800 border border-gray-700 p-2 rounded text-white">
+    </div>
+
+    <!-- внутри формы -->
+    {% if current_user.team %}
+    <div>
+      <label class="block text-sm mb-1">Роль</label>
+      <div class="w-full bg-gray-800 border border-gray-700 p-2 rounded text-white">
+        {{ current_user.role.name if current_user.role else 'Без роли' }}
+      </div>
+    </div>
+    {% endif %}
+    
+
+    <div>
+      <label class="block text-sm mb-1">Описание</label>
+      <textarea name="description" rows="4"
+             class="w-full bg-gray-800 border border-gray-700 p-2 rounded text-white">{{ current_user.description }}</textarea>
+    </div>
+
+
+    <button type="submit" class="btn bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded transition-colors duration-300">Сохранить</button>
+  </form>
+
+  <hr class="my-4 border-gray-700">
+
+  <form action="{{ url_for('user_blueprint.change_password') }}" method="POST" class="space-y-4">
+    <h2 class="text-xl font-semibold">Смена пароля</h2>
+    <input type="password" name="old_password" placeholder="Старый пароль"
+           class="w-full bg-gray-800 border border-gray-700 p-2 rounded text-white">
+    <input type="password" name="new_password" placeholder="Новый пароль"
+           class="w-full bg-gray-800 border border-gray-700 p-2 rounded text-white">
+    <button type="submit" class="btn bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded transition-colors duration-300">Изменить пароль</button>
+  </form>
+  
+  <div class="mt-6">
+    <a href="{{ url_for('user_blueprint.dashboard') }}" class="text-blue-400 hover:text-blue-300 transition-colors duration-300">
+      <i class="fas fa-arrow-left mr-2"></i>Вернуться в личный кабинет
+    </a>
+  </div>
+</div>
+{% endblock %}

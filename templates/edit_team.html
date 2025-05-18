@@ -40,7 +40,7 @@
              class="bg-gray-900 text-white px-4 py-2 rounded border border-gray-700 w-full" readonly>
       <button onclick="copyCode()" class="btn btn-sm">📋 Копировать</button>
     
-      <form method="POST" action="{{ url_for('team.refresh_invite_code') }}">
+      <form method="POST" action="{{ url_for('team_blueprint.refresh_invite_code') }}">
         <button type="submit" class="btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-black">♻️ Новый код</button>
       </form>
       

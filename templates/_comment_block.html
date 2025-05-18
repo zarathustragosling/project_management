@@ -1,19 +1,20 @@
 {% set comment = nested_comment if nested_comment is defined else comment %}
 {% set is_reply = comment.parent_id is not none %}
 
-<div class="comment-thread {{ 'ml-6 border-l border-slate-600 pl-4' if is_reply else '' }}"
+<div class="comment-thread {{ 'ml-6 border-l border-[#3a3a3a] pl-4' if is_reply else '' }}"
      data-comment-id="{{ comment.id }}"
      data-parent-id="{{ comment.parent_id }}"
      data-is-reply="{{ 1 if is_reply else 0 }}">
 
+
   <div class="flex items-start gap-3">
     <img src="{{ comment.author.avatar or url_for('static', filename='default_avatar.png') }}"
-         class="w-10 h-10 rounded-full object-cover" alt="avatar">
+         class="w-10 h-10 rounded-full object-cover border-2 border-[#3a3a3a]" alt="avatar">
 
-    <div class="{{ 'bg-slate-700' if is_reply else 'bg-gray-800' }} p-4 rounded-lg w-full">
+    <div class="{{ 'bg-[#333333]' if is_reply else 'bg-[#2a2a2a]' }} p-4 rounded-lg w-full border border-[#3a3a3a] shadow-md">
       <div class="flex items-center gap-2 text-sm">
-        <a href="{{ url_for('user.view_profile', user_id=comment.author.id) }}"
-           class="font-semibold text-white hover:text-blue-400 transition">
+        <a href="{{ url_for('user_blueprint.view_profile', user_id=comment.author.id) }}"
+           class="font-semibold text-white hover:text-zinc-900 transition">
            {{ comment.author.username }}
         </a>
         <span class="text-xs text-gray-400">
@@ -22,7 +23,7 @@
       </div>
 
       <p class="mt-2 text-sm text-white whitespace-pre-wrap break-words">
-        {{ comment.content | highlight_mentions | safe }}
+        {{ comment.content | striptags | escape }}
       </p>
 
       {% if comment.attachments %}
@@ -39,35 +40,35 @@
       {% if current_user.id == comment.author.id %}
         <button class="edit-comment-btn mt-3 text-xs text-blue-400 hover:underline mr-3"
                 data-comment-id="{{ comment.id }}"
-                data-comment-content="{{ comment.content|escape }}">
+                data-comment-content="{{ comment.content|striptags|escape }}">
           Редактировать
+        </button>
+        <button class="delete-comment-btn mt-3 text-xs text-red-400 hover:underline mr-3"
+                data-comment-id="{{ comment.id }}">
+                🗑
         </button>
       {% endif %}
       
       {% if not is_reply %}
-        <button class="reply-btn mt-3 text-xs text-blue-400 hover:underline"
-                data-username="{{ comment.author.username }}"
-                data-userid="{{ comment.author.id }}"
+        <button class="reply-btn mt-3 text-xs text-white hover:underline"
                 data-commentid="{{ comment.id }}">
           Ответить
         </button>
         
         {% if (current_user.id == comment.task.created_by or current_user.is_teamlead()) and not comment.is_solution and not comment.task.comments|selectattr('is_solution', 'true')|list %}
-          <form method="POST" action="{{ url_for('comment.mark_as_solution', comment_id=comment.id) }}" class="inline" style="display: inline;">
+          <form method="POST" action="{{ url_for('comment_blueprint.mark_as_solution', comment_id=comment.id) }}" class="inline" style="display: inline;">
             <button type="submit" class="mt-3 ml-3 text-xs text-green-400 hover:underline">
-              ✅ Пометить как решение
+              ✅
             </button>
           </form>
         {% endif %}
         
         {% if comment.is_solution %}
-          <span class="mt-3 ml-3 text-xs text-green-500 font-medium">
-            ✅ Помечен как решение задачи
-          </span>
+          
           {% if current_user.id == comment.task.created_by or current_user.is_teamlead() %}
-            <form method="POST" action="{{ url_for('comment.unmark_as_solution', comment_id=comment.id) }}" class="inline" style="display: inline;">
+            <form method="POST" action="{{ url_for('comment_blueprint.unmark_as_solution', comment_id=comment.id) }}" class="inline" style="display: inline;">
               <button type="submit" class="mt-3 ml-3 text-xs text-red-400 hover:underline">
-                ❌ Снять отметку
+                ❌
               </button>
             </form>
           {% endif %}

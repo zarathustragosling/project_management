@@ -4,40 +4,43 @@
 {% block content %}
 <div class="hidden">
   <div class="w-10 h-10 rounded-full object-cover"></div>
-  <div class="text-sm text-xs text-white text-gray-400 text-blue-400"></div>
-  <div class="hover:underline hover:text-blue-400"></div>
-  <div class="bg-slate-800 bg-slate-700 bg-gray-800 bg-gray-900"></div>
+  <div class="text-sm text-xs text-white text-gray-400 text-gray-300"></div>
+  <div class="hover:underline hover:text-gray-300"></div>
+  <div class="bg-grey-800 bg-gray-700 bg-gray-800 bg-gray-900"></div>
   <div class="p-4 rounded-lg mt-2 mb-4 space-y-4"></div>
   <div class="ml-10 ml-6 border-l border-slate-600 pl-4"></div>
   <div class="flex items-start gap-3"></div>
 </div>
 
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="w-full py-8 px-2">
+
+
   <div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-bold text-white">📌 Kanban-доска</h1>
-    <a href="{{ url_for('task.task_creator') }}"
-       class="bg-blue-600 hover:bg-blue-800 text-white px-5 py-2 rounded-lg shadow transition text-sm font-medium">
-      + Создать задачу
-    </a>
+    <h1 class="text-3xl font-bold text-white kanban-title">Kanban-доска</h1>
+    <div class="flex gap-4">
+      <a class="archive-btn hidden"></a>
+
+      <a href="{{ url_for('task_blueprint.task_creator') }}"
+         class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2 rounded-lg shadow transition text-sm font-medium create-task-btn">
+        + Создать задачу
+      </a>
+    </div>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-    {% for column, label in [('To Do', '🕐 To Do'), ('In Progress', '⚙️ In Progress'), ('Done', '✅ Done')] %}
-    <div class="kanban-column bg-slate-800 rounded-xl p-4 shadow min-h-[400px]" id="{{ column.replace(' ', '_') }}-column">
+  <div class="flex gap-4">
+    <div class="kanban-container flex-grow">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" style="min-width: 1000px;">
+    {% for column, label in [('To Do', 'Сделать'), ('In Progress', 'В процессе'), ('Done', 'Выполнено')] %}
+    <div class="kanban-column bg-gray-890 rounded-xl p-3 shadow min-h-[400px]" id="{{ column.replace(' ', '_') }}-column">
       <h2 class="text-xl font-semibold text-white mb-4">{{ label }}</h2>
       <div class="space-y-4">
-        {% for task in tasks if task.status.value == column %}
-        <div class="task-card border-l-4 p-4 rounded-lg shadow transition
-             {% if task.priority == 'Высокий' %}
-               border-red-500 bg-slate-700
-             {% elif task.priority == 'Средний' %}
-               border-yellow-400 bg-slate-700
-             {% else %}
-               border-green-500 bg-slate-700
-             {% endif %}" data-task-id="{{ task.id }}">
+        {% if column == 'Archive' %}
+            {% for task in tasks|selectattr('is_archived', 'equalto', True)|sort(attribute='created_at', reverse=True)|list|slice(0, 5) %}
+          <div class="task-card p-3 rounded-lg shadow transition bg-zinc-900 relative overflow-hidden {% if task.comments|selectattr('is_solution', 'true')|list|length > 0 %}has-solution{% endif %}" data-task-id="{{ task.id }}" style="min-width: 280px;">
+          <div class="absolute top-0 left-0 right-0 h-1 {% if task.priority == 'Высокий' %}bg-red-500{% elif task.priority == 'Средний' %}bg-yellow-400{% else %}bg-green-500{% endif %}"></div>
 
           <h3 class="text-white font-semibold text-base mb-1">
-            <a href="{{ url_for('task.task_detail', task_id=task.id) }}" class="hover:text-blue-400 transition">
+            <a href="{{ url_for('task_blueprint.task_detail', task_id=task.id) }}" class="hover:text-gray-300 transition">
               {{ task.title }}
             </a>
           </h3>
@@ -45,8 +48,8 @@
             <p class="text-sm text-gray-300">
               <span class="inline-flex items-center">
                 <span class="mr-1">📁</span>
-                <a href="{{ url_for('project.project_detail', project_id=task.project_id) }}"
-                   class="text-blue-400 hover:underline">{{ task.project.name }}</a>
+                <a href="{{ url_for('project_blueprint.project_detail', project_id=task.project_id) }}"
+                   class="text-gray-400 hover:underline hover:text-gray-300">{{ task.project.name }}</a>
               </span>
             </p>
             <p class="text-sm text-gray-400">
@@ -54,7 +57,7 @@
                 <span class="mr-1">👤</span>
                 <strong>Ответственный:</strong> &nbsp;
                 {% if task.assigned_user %}
-                  <a href="{{ url_for('user.view_profile', user_id=task.assigned_user.id) }}" class="text-blue-400 hover:underline">
+                  <a href="{{ url_for('user_blueprint.view_profile', user_id=task.assigned_user.id) }}" class="text-gray-400 hover:underline hover:text-gray-300">
                     {{ task.assigned_user.username }}
                   </a>
                 {% else %}
@@ -64,37 +67,123 @@
             </p>
             <p class="text-sm text-gray-400">
               <span class="inline-flex items-center">
-                <span class="mr-1">⌚</span>
+                <span class="mr-1"></span>
                 <strong>Постановщик:</strong>&nbsp;
-                <a href="{{ url_for('user.view_profile', user_id=task.creator.id)}}" class="text-blue-400 hover:underline">
+                <a href="{{ url_for('user_blueprint.view_profile', user_id=task.creator.id)}}" class="text-gray-400 hover:underline hover:text-gray-300">
                   {{ task.creator.username }}
                 </a>
               </span>
             </p>
           </div>
         </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            {% for task in tasks|selectattr('status.value', 'equalto', column)|selectattr('is_archived', 'equalto', False)|sort(attribute='position') %}
+          <div class="task-card p-3 rounded-lg shadow transition bg-zinc-900 relative overflow-hidden {% if task.comments|selectattr('is_solution', 'true')|list|length > 0 %}has-solution{% endif %}" data-task-id="{{ task.id }}" style="min-width: 280px;">
+              <div class="absolute top-0 left-0 right-0 h-1 {% if task.priority == 'Высокий' %}bg-red-500{% elif task.priority == 'Средний' %}bg-yellow-400{% else %}bg-green-500{% endif %}"></div>
+
+              <h3 class="text-white font-semibold text-base mb-1">
+                <a href="{{ url_for('task_blueprint.task_detail', task_id=task.id) }}" class="hover:text-gray-300 transition">
+                  {{ task.title }}
+                </a>
+              </h3>
+              <div class="flex flex-col gap-1 mt-2">
+                <p class="text-sm text-gray-300">
+                  <span class="inline-flex items-center">
+                    <span class="mr-1"></span>
+                    <strong>Проект:</strong> &nbsp;
+                    <a href="{{ url_for('project_blueprint.project_detail', project_id=task.project_id) }}"
+                       class="text-gray-400 hover:underline hover:text-gray-300">{{ task.project.name }}</a>
+                  </span>
+                </p>
+                <p class="text-sm text-gray-400">
+                  <span class="inline-flex items-center">
+                    <span class="mr-1"></span>
+                    <strong>Ответственный:</strong> &nbsp;
+                    {% if task.assigned_user %}
+                      <a href="{{ url_for('user_blueprint.view_profile', user_id=task.assigned_user.id) }}" class="text-gray-400 hover:underline hover:text-gray-300">
+                        {{ task.assigned_user.username }}
+                      </a>
+                    {% else %}
+                      <span>Не назначен</span>
+                    {% endif %}
+                  </span>
+                </p>
+                <p class="text-sm text-gray-400">
+                  <span class="inline-flex items-center">
+                    <span class="mr-1"></span>
+                    <strong>Постановщик:</strong>&nbsp;
+                    <a href="{{ url_for('user_blueprint.view_profile', user_id=task.creator.id)}}" class="text-gray-400 hover:underline hover:text-gray-300">
+                      {{ task.creator.username }}
+                    </a>
+                  </span>
+                </p>
+              </div>
+            </div>
+            {% endfor %}
+        {% endif %}
       </div>
     </div>
     {% endfor %}
   </div>
+    </div>
+    
+    <!-- Боковая панель архива -->
+    <div class="archive-sidebar bg-zinc-900 rounded-xl p-3 shadow w-56 min-h-[400px] flex flex-col">
+      <h2 class="text-xl font-semibold text-white mb-4 text-center"> Архив</h2>
+      
+      <div class="flex-grow flex items-center justify-center border-2 border-dashed border-zinc-500 rounded-lg p-4">
+        <div class="text-center">
+          <div class="text-4xl mb-2 opacity-50">📦</div>
+          <p class="text-gray-500">Перетащите задачу</p>
+        </div>
+      </div>
+      <a href="{{ url_for('task_blueprint.archive') }}" class="mt-4 text-center text-sm text-gray-400 hover:text-white transition">Просмотреть все архивные задачи</a>
+    </div>
 </div>
 
 <style>
   .task-card {
     transition: transform 0.2s ease, background-color 0.2s ease;
   }
+
+  .task-card.has-solution::after {
+    content: '✓';
+    position: absolute;
+    top: 8px;
+    left: 259px;
+    width: 20px;
+    height: 20px;
+    background-color: #10B981;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 5;
+    opacity: 1;
+  }
   
   .task-card:hover {
     transform: translateY(-2px);
-    background-color: #1f2937 !important;
+    background-color: #272727 !important;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
   .kanban-column.dragover {
-    outline: 2px dashed #38bdf8;
+    outline: 2px dashed #777777;
     outline-offset: -10px;
-    background-color: #1e293b;
+    background-color: #1d1d1d;
+  }
+
+  .archive-sidebar.dragover {
+    outline: 2px dashed #777777;
+    outline-offset: -10px;
+    background-color: #1d1d1d;
+    transform: scale(1.02);
+    transition: all 0.2s ease;
   }
 
   .task-card.dragging {
@@ -102,12 +191,43 @@
     transform: scale(0.98);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
+  
+  .archive-sidebar {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out, all 0.3s ease;
+}
+
+.archive-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, #555555, #777777);
+  opacity: 0.7;
+}
+
+.archive-sidebar:hover {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  transform: translateY(-5px);
+}
+
+.archive-sidebar.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
 </style>
 
 <script>
   // === Drag'n'Drop ===
   const columns = document.querySelectorAll('.kanban-column');
   const tasks = document.querySelectorAll('.task-card');
+  const archiveSidebar = document.querySelector('.archive-sidebar');
 
   tasks.forEach(task => {
     task.setAttribute('draggable', true);
@@ -122,6 +242,7 @@
     });
   });
 
+  // Обработка перетаскивания для колонок канбана
   columns.forEach(column => {
     column.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -136,12 +257,19 @@
       const taskId = e.dataTransfer.getData('text/plain');
       const taskCard = document.querySelector(`.task-card[data-task-id='${taskId}']`);
       if (taskCard && column !== taskCard.parentElement) {
-        const statusKey = column.id.replace('-column', '').toUpperCase().replace('-', '_');
+        const columnId = column.id;
         column.querySelector('.space-y-4').appendChild(taskCard);
-        fetch(`/task/update_task_status/${taskId}`, {
+        
+        // Обновляем статус задачи
+        const statusKey = columnId.replace('-column', '').toUpperCase().replace('-', '_');
+        // Получаем позицию задачи в колонке
+        const taskCards = column.querySelectorAll('.task-card');
+        const position = Array.from(taskCards).indexOf(taskCard);
+        
+        fetch(`/task/update-status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: statusKey })
+          body: JSON.stringify({ task_id: taskId, status: statusKey, position: position })
         })
         .then(res => res.json())
         .then(data => {
@@ -151,5 +279,78 @@
       }
     });
   });
+  
+  // Обработка перетаскивания для архива
+  if (archiveSidebar) {
+    archiveSidebar.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      archiveSidebar.classList.add('dragover');
+    });
+    archiveSidebar.addEventListener('dragleave', () => {
+      archiveSidebar.classList.remove('dragover');
+    });
+    archiveSidebar.addEventListener('drop', (e) => {
+      e.preventDefault();
+      archiveSidebar.classList.remove('dragover');
+      const taskId = e.dataTransfer.getData('text/plain');
+      const taskCard = document.querySelector(`.task-card[data-task-id='${taskId}']`);
+      
+      if (taskCard) {
+        // Анимация исчезновения карточки
+        taskCard.style.transition = 'all 0.3s ease';
+        taskCard.style.opacity = '0';
+        taskCard.style.transform = 'scale(0.8)';
+        
+        // Архивируем задачу
+        fetch(`/task/${taskId}/archive`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => {
+          if (!res.ok) {
+            alert('Ошибка архивирования задачи');
+            return Promise.reject('Ошибка архивирования');
+          }
+          // После успешного архивирования удаляем карточку из DOM
+          setTimeout(() => {
+            taskCard.remove();
+          }, 300);
+          return res;
+        })
+        .catch(error => console.error('Ошибка запроса:', error));
+      }
+    });
+  }
+
+  // Анимация появления элементов при загрузке страницы
+
+  // Анимация появления элементов при загрузке страницы
+  document.addEventListener('DOMContentLoaded', function() {
+    const kanbanTitle = document.querySelector('.kanban-title');
+    const createTaskBtn = document.querySelector('.create-task-btn');
+    const archiveBtn = document.querySelector('.archive-btn');
+    const archiveSidebar = document.querySelector('.archive-sidebar');
+    
+    setTimeout(() => {
+      kanbanTitle.classList.add('visible');
+      createTaskBtn.classList.add('visible');
+      archiveBtn.classList.add('visible');
+      
+      document.querySelectorAll('.kanban-column').forEach((column, index) => {
+        setTimeout(() => {
+          column.classList.add('visible');
+        }, 100 * (index + 1));
+      });
+      
+      // Анимация появления боковой панели архива
+      setTimeout(() => {
+        if (archiveSidebar) {
+          archiveSidebar.classList.add('visible');
+        }
+      }, 500);
+    }, 100);
+  });
+  
+
 </script>
 {% endblock %}

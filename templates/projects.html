@@ -4,38 +4,38 @@
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-10 space-y-10">
   <div class="flex justify-between items-center">
-    <h1 class="text-3xl font-bold text-white">📂 Все проекты команды</h1>
-    <form method="POST" action="{{ url_for('project.project_list') }}" class="flex gap-2">
+    <h1 class="text-3xl font-bold text-white"data-aos="fade-down">   Все проекты команды</h1>
+    <form method="POST" action="{{ url_for('project_blueprint.project_list') }}" class="flex gap-2" data-aos="fade-left">
       <input type="text" name="name" placeholder="Название..." required
-             class="p-2 rounded-lg bg-slate-900 text-white border border-slate-700 w-48">
+             class="p-2 rounded-lg bg-zinc-800 text-white border border-slate-700 w-48">
       <input type="text" name="description" placeholder="Описание..."
-             class="p-2 rounded-lg bg-slate-900 text-white border border-slate-700 w-64">
+             class="p-2 rounded-lg bg-zinc-800 text-white border border-slate-700 w-64">
       <button type="submit"
               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition">
-        ➕ Добавить
+        Добавить
       </button>
     </form>
   </div>
 
   <!-- Фильтры -->
-  <div class="bg-slate-800 p-4 rounded-lg shadow space-y-4">
-    <form method="GET" action="{{ url_for('project.project_list') }}" class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+  <div class="bg-zinc-700 p-4 rounded-lg shadow space-y-4" data-aos="fade-right">
+    <form method="GET" action="{{ url_for('project_blueprint.project_list') }}" class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
       <div>
         <label class="block text-sm text-slate-300 mb-1">Поиск по названию:</label>
         <input type="text" name="q" value="{{ request.args.get('q', '') }}"
-               class="p-2 rounded bg-slate-900 text-white border border-slate-700 w-64">
+               class="p-2 rounded bg-zinc-800 text-white border border-slate-700 w-64">
       </div>
       <div>
         <label class="block text-sm text-slate-300 mb-1">Сортировать:</label>
-        <select name="sort" class="p-2 rounded bg-slate-900 text-white border border-slate-700">
-          <option value="newest">📅 Сначала новые</option>
-          <option value="oldest">📆 Сначала старые</option>
-          <option value="name">🔤 По алфавиту</option>
+        <select name="sort" class="p-2 rounded bg-zinc-800 text-white border border-slate-700">
+          <option value="newest">Сначала новые</option>
+          <option value="oldest">Сначала старые</option>
+          <option value="name">По алфавиту</option>
         </select>
       </div>
       <button type="submit"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition">
-        🔍 Применить
+              class="bg-zinc-800 hover:bg-gray-700 text-white px-4 py-3 rounded-lg text-sm transition">
+        Применить
       </button>
     </form>
   </div>
@@ -43,9 +43,9 @@
   {% if projects %}
     <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for project in projects %}
-        <li class="bg-slate-800 rounded-lg p-4 space-y-2 shadow hover:shadow-lg transition">
+        <li class="bg-zinc-700 rounded-lg p-4 space-y-2 shadow hover:shadow-lg transition"data-aos="zoom-in" data-aos-duration="1000">
           <h3 class="text-lg font-bold text-white">
-            <a href="{{ url_for('project.project_detail', project_id=project.id) }}" class="hover:text-blue-400">
+            <a href="{{ url_for('project_blueprint.project_detail', project_id=project.id) }}" class="hover:text-gray-300">
               {{ project.name }}
             </a>
           </h3>
@@ -54,7 +54,7 @@
           </p>
           <div class="flex justify-between items-center pt-2">
             <span class="text-xs text-slate-500">ID: {{ project.id }}</span>
-            <a href="{{ url_for('project.delete_project', project_id=project.id) }}"
+            <a href="{{ url_for('project_blueprint.delete_project', project_id=project.id) }}"
                class="text-red-500 text-sm hover:underline">
               🗑 Удалить
             </a>

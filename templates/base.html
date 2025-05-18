@@ -31,6 +31,7 @@
     <!-- Custom -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
     <script src="{{ url_for('static', filename='scripts.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='notification.js') }}" defer></script>
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -40,9 +41,9 @@
     <script src="https://unpkg.com/frappe-gantt/dist/frappe-gantt.min.js"></script>
   </head>
 
-  <body class="bg-gray-900 text-gray-100 font-inter min-h-screen transition-colors duration-300">
+  <body class="bg-[#1e1e1e] text-gray-100 font-inter min-h-screen transition-colors duration-300">
     <!-- Navbar -->
-    <nav class="fixed top-0 left-0 w-full z-50 bg-gray-800 border-b border-gray-700 shadow-lg transition-all duration-300">
+    <nav class="fixed top-0 left-0 w-full z-50 bg-[#2a2a2a]/95 border-b border-[#444444] shadow-xl backdrop-blur-md transition-all duration-300">
       <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
         <a href="/" class="text-xl font-semibold text-gray-100 hover:text-gray-300 transition-colors duration-300 flex items-center">
           <i class="fas fa-project-diagram mr-2"></i>
@@ -50,35 +51,37 @@
         </a>
         <div class="flex gap-6 items-center text-sm">
           {% if current_user.team_id %}
-            <a href="{{ url_for('project.project_list') }}" class="nav-link"><i class="fas fa-folder-open mr-1"></i> Проекты</a>
-            <a href="{{ url_for('task.kanban') }}" class="nav-link"><i class="fas fa-columns mr-1"></i> Канбан</a>
-            <a href="{{ url_for('charts.charts') }}" class="nav-link"><i class="fas fa-chart-pie mr-1"></i> Диаграмма Ганта</a>
-            <a href="{{ url_for('report.reports') }}" class="nav-link"><i class="fas fa-file-alt mr-1"></i> Отчёты</a>
-            <a href="{{ url_for('team.team_detail', team_id=current_user.team_id) }}" class="btn-sm bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded transition-colors duration-300">
+            <a href="{{ url_for('project_blueprint.project_list') }}" class="nav-link"><i class="fas fa-folder-open mr-1"></i> Проекты</a>
+            <a href="{{ url_for('task_blueprint.kanban') }}" class="nav-link"><i class="fas fa-columns mr-1"></i> Канбан</a>
+            <a href="{{ url_for('charts_blueprint.charts') }}" class="nav-link"><i class="fas fa-chart-pie mr-1"></i> Диаграмма Ганта</a>
+            <a href="{{ url_for('report_blueprint.reports') }}" class="nav-link"><i class="fas fa-file-alt mr-1"></i> Отчёты</a>
+            <a href="{{ url_for('team_blueprint.team_detail', team_id=current_user.team_id) }}" class="btn-sm bg-[#4a4a4a] hover:bg-[#5a5a5a] text-white px-3 py-1 rounded transition-colors duration-300 shadow-md">
               <i class="fas fa-users mr-1"></i> Команда
             </a>
-            {% if current_user.is_authenticated and current_user.is_admin %}
-            <a href="{{ url_for('admin.system_admin_panel') }}" class="nav-link">
-              <i class="fas fa-file-alt mr-1"></i> Админ
-            </a>
-          {% endif %}
+           
         {% else %}
             <span class="nav-link text-gray-500 cursor-not-allowed"><i class="fas fa-folder-open mr-1"></i> Проекты</span>
             <span class="nav-link text-gray-500 cursor-not-allowed"><i class="fas fa-columns mr-1"></i> Канбан</span>
             <span class="nav-link text-gray-500 cursor-not-allowed"><i class="fas fa-chart-pie mr-1"></i> Диаграма Ганта</span>
             <span class="nav-link text-gray-500 cursor-not-allowed"><i class="fas fa-file-alt mr-1"></i> Отчёты</span>
-            <span class="btn-sm bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded transition-colors duration-300 cursor-not-allowed"><i class="fas fa-file-alt mr-1"></i> Команда</span>
+            <span class="btn-sm bg-[#4a4a4a] hover:bg-[#5a5a5a] text-white px-3 py-1 rounded transition-colors duration-300 cursor-not-allowed shadow-md"><i class="fas fa-file-alt mr-1"></i> Команда</span>
           {% endif %}
         </div>
         <div class="flex gap-4 items-center text-sm">
           {% if current_user.is_authenticated %}
-            <a href="{{ url_for('user.update_profile') }}" class="nav-link"><i class="fas fa-user mr-1"></i> Личный кабинет</a>
-            <a href="{{ url_for('user.logout') }}" class="btn-sm bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded transition-colors duration-300">
+            <a href="{{ url_for('notification_blueprint.notifications') }}" class="nav-link relative">
+              <i class="fas fa-bell mr-1"></i> 
+              <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center {{ 'hidden' if not current_user.notifications or current_user.notifications|selectattr('is_read', 'equalto', false)|list|length == 0 else '' }}">
+                {{ current_user.notifications|selectattr('is_read', 'equalto', false)|list|length }}
+              </span>
+            </a>
+            <a href="{{ url_for('user_blueprint.dashboard') }}" class="nav-link"><i class="fas fa-user mr-1"></i> Личный кабинет</a>
+            <a href="{{ url_for('user_blueprint.logout') }}" class="btn-sm bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded transition-colors duration-300 shadow-md">
               <i class="fas fa-sign-out-alt mr-1"></i> Выйти
             </a>
           {% else %}
-            <a href="{{ url_for('user.login') }}" class="nav-link"><i class="fas fa-sign-in-alt mr-1"></i> Войти</a>
-            <a href="{{ url_for('user.register') }}" class="nav-link"><i class="fas fa-user-plus mr-1"></i> Регистрация</a>
+            <a href="{{ url_for('user_blueprint.login') }}" class="nav-link"><i class="fas fa-sign-in-alt mr-1"></i> Войти</a>
+            <a href="{{ url_for('user_blueprint.register') }}" class="nav-link"><i class="fas fa-user-plus mr-1"></i> Регистрация</a>
           {% endif %}
         </div>
       </div>
@@ -89,7 +92,7 @@
     {% if messages %}
       <div class="mt-24 max-w-3xl mx-auto px-4 space-y-2" data-aos="fade-down" data-aos-duration="800">
         {% for category, message in messages %}
-          <div class="text-sm px-4 py-3 rounded-lg shadow-md flex items-center {{ 'bg-green-600' if category == 'success' else 'bg-red-600' }}">
+          <div class="text-sm px-4 py-3 rounded-lg shadow-md flex items-center {{ 'bg-green-600' if category == 'success' else 'bg-red-600' }} backdrop-blur-sm bg-opacity-90">
             <i class="{{ 'fas fa-check-circle' if category == 'success' else 'fas fa-exclamation-circle' }} mr-2"></i>
             {{ message }}
           </div>
@@ -99,7 +102,7 @@
     {% endwith %}
 
     <!-- Page content -->
-    <main class="mt-32 max-w-7xl mx-auto px-4 pb-12">
+    <main class="mt-32 max-w-7xl mx-auto px-4 pb-12 page-transition">
       {% block content %}{% endblock %}
     </main>
 

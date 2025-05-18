@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-10 space-y-8">
+  <h1 class="text-2xl font-bold">Личный кабинет</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Левая колонка - информация о пользователе -->
+    <div class="bg-[#2a2a2a] p-6 rounded-lg shadow-lg">
+      <div class="flex flex-col items-center mb-6">
+        <img src="{{ current_user.avatar or url_for('static', filename='default_avatar.png') }}" 
+             class="w-24 h-24 rounded-full mb-3 object-cover" />
+        <h2 class="text-xl font-semibold">{{ current_user.username }}</h2>
+        {% if current_user.team %}
+          <p class="text-gray-400">{{ current_user.role.name if current_user.role else 'Без роли' }}</p>
+          <p class="text-gray-400">Команда: {{ current_user.team.name }}</p>
+        {% else %}
+          <p class="text-gray-400">Не состоит в команде</p>
+        {% endif %}
+      </div>
+      
+      <div class="space-y-2">
+        <a href="{{ url_for('user_blueprint.edit_profile') }}" 
+           class="block w-full text-center bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded transition-colors duration-300">
+          <i class="fas fa-user-edit mr-2"></i>Редактировать профиль
+        </a>
+        
+        {% if not current_user.team %}
+        <a href="{{ url_for('team_blueprint.select_team') }}" 
+           class="block w-full text-center bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded transition-colors duration-300">
+          <i class="fas fa-users mr-2"></i>Присоединиться к команде
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Средняя колонка - задачи, где пользователь ответственный -->
+    <div class="bg-[#2a2a2a] p-6 rounded-lg shadow-lg">
+      <h2 class="text-xl font-semibold mb-4">Мои задачи</h2>
+      
+      {% if assigned_tasks %}
+        <div class="space-y-3">
+          {% for task in assigned_tasks %}
+            <a href="{{ url_for('task_blueprint.task_detail', task_id=task.id) }}" 
+               class="block bg-[#3a3a3a] hover:bg-[#444444] p-3 rounded transition-colors duration-300">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-medium">{{ task.title }}</h3>
+                  <p class="text-sm text-gray-400">{{ task.project.name }}</p>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full {{ 'bg-red-600' if task.priority == 'Высокий' else 'bg-yellow-600' if task.priority == 'Средний' else 'bg-blue-600' }}">
+                  {{ task.priority }}
+                </span>
+              </div>
+              <div class="mt-2 flex justify-between text-xs text-gray-400">
+                <span>Статус: {{ task.status.value }}</span>
+                {% if task.deadline %}
+                  <span>Дедлайн: {{ task.deadline.strftime('%d.%m.%Y') }}</span>
+                {% endif %}
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-gray-400">У вас нет назначенных задач</p>
+      {% endif %}
+    </div>
+
+    <!-- Правая колонка - задачи, где пользователь постановщик -->
+    <div class="bg-[#2a2a2a] p-6 rounded-lg shadow-lg">
+      <h2 class="text-xl font-semibold mb-4">Созданные мной задачи</h2>
+      
+      {% if created_tasks %}
+        <div class="space-y-3">
+          {% for task in created_tasks %}
+            <a href="{{ url_for('task_blueprint.task_detail', task_id=task.id) }}" 
+               class="block bg-[#3a3a3a] hover:bg-[#444444] p-3 rounded transition-colors duration-300">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-medium">{{ task.title }}</h3>
+                  <p class="text-sm text-gray-400">{{ task.project.name }}</p>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full {{ 'bg-red-600' if task.priority == 'Высокий' else 'bg-yellow-600' if task.priority == 'Средний' else 'bg-blue-600' }}">
+                  {{ task.priority }}
+                </span>
+              </div>
+              <div class="mt-2 flex justify-between text-xs text-gray-400">
+                <span>Статус: {{ task.status.value }}</span>
+                <span>Ответственный: {{ task.assigned_user.username if task.assigned_user else 'Не назначен' }}</span>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-gray-400">Вы не создали ни одной задачи</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -7,7 +7,7 @@
 
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold text-white">📊 Отчеты проекта "{{ project.name }}"</h1>
-    <a href="{{ url_for('report.reports') }}" class="text-blue-400 hover:text-blue-300 flex items-center">
+    <a href="{{ url_for('report_blueprint.reports') }}" class="text-gray-400 hover:text-gray-300 flex items-center">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
@@ -32,8 +32,8 @@
           <tr>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{{ report.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-white space-x-2">
-              <a href="{{ url_for('report.view_report', report_id=report.id) }}" class="text-blue-400 hover:text-blue-300">Просмотр</a>
-              <form method="POST" action="{{ url_for('report.delete_report', report_id=report.id) }}" class="inline">
+              <a href="{{ url_for('report_blueprint.view_report', report_id=report.id) }}" class="text-gray-400 hover:text-gray-300">Просмотр</a>
+              <form method="POST" action="{{ url_for('report_blueprint.delete_report', report_id=report.id) }}" class="inline">
                 <button type="submit" class="text-red-400 hover:text-red-300" onclick="return confirm('Вы уверены, что хотите удалить этот отчет?')">Удалить</button>
               </form>
             </td>
