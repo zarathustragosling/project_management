@@ -8,7 +8,7 @@
 
 Проект состоит из трех основных контейнеров:
 1. **web** - Flask-приложение
-2. **db** - MySQL база данных
+2. **db** - PostgreSQL база данных
 3. **nginx** - Веб-сервер для обработки запросов и статических файлов
 
 ## Требования для деплоя
@@ -35,26 +35,34 @@ docker-compose up -d
 
 ## Настройка переменных окружения
 
-Перед запуском приложения необходимо настроить переменные окружения в файле `.env`. Пример файла:
+Перед запуском приложения необходимо настроить переменные окружения в файле `.env`. В репозитории предоставлен файл `.env.example` как шаблон. Скопируйте его и переименуйте в `.env`, затем настройте под свои нужды:
 
 ```
 # Настройки базы данных
-MYSQL_DATABASE=project_management
-MYSQL_USER=pmuser
-MYSQL_PASSWORD=pmpassword
-MYSQL_ROOT_PASSWORD=rootpassword
+POSTGRES_DB=project_management
+POSTGRES_USER=your_db_username
+POSTGRES_PASSWORD=your_db_password
+POSTGRES_ADMIN_PASSWORD=your_admin_password
 
 # Настройки Flask
 FLASK_ENV=production
 SECRET_KEY=your_secret_key_here
 
 # Настройки администратора
-ADMIN_PASSWORD=admin123
+ADMIN_PASSWORD=your_admin_password
 
 # Настройки сервера
 APP_PORT=5000
 NGINX_PORT=80
 ```
+
+## Безопасное управление конфиденциальными данными
+
+Файл `.env` содержит конфиденциальные данные и не должен публиковаться в репозитории. Для этого:
+
+1. Файл `.env` добавлен в `.gitignore` и не будет отправлен в репозиторий
+2. Используйте файл `.env.example` как шаблон без реальных паролей
+3. При деплое на сервер, создайте файл `.env` вручную или используйте систему управления секретами
 
 ## Учетные данные по умолчанию
 
@@ -67,7 +75,7 @@ NGINX_PORT=80
 Для создания резервной копии базы данных выполните:
 
 ```bash
-docker-compose exec db mysqldump -u pmuser -ppmpassword project_management > backup.sql
+docker-compose exec db pg_dump -U ${POSTGRES_USER} -d ${POSTGRES_DB} > backup.sql
 ```
 
 ## Обновление приложения

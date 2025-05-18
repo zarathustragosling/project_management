@@ -8,10 +8,10 @@ port="$1"
 shift
 cmd="$@"
 
-until mysql -h"$host" -P"$port" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" -e 'SELECT 1'; do
-  >&2 echo "MySQL еще не доступен - ожидание..."
+until PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "$host" -p "$port" -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c 'SELECT 1'; do
+  >&2 echo "PostgreSQL еще не доступен - ожидание..."
   sleep 1
 done
 
->&2 echo "MySQL готов - выполнение команды"
+>&2 echo "PostgreSQL готов - выполнение команды"
 exec $cmd

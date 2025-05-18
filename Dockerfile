@@ -1,8 +1,8 @@
 FROM python:3.9-slim
 
-# Установка системных зависимостей, включая клиент MySQL
+# Установка системных зависимостей, включая клиент PostgreSQL
 RUN apt-get update && apt-get install -y \
-    default-mysql-client \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

@@ -49,7 +49,7 @@
 
 ## Инициализация базы данных
 
-При первом запуске необходимо инициализировать базу данных:
+При первом запуске база данных инициализируется автоматически через скрипт init_db.py. Если требуется ручная инициализация, выполните:
 
 ```bash
 docker-compose exec web python -c "from server.app import app; from database import db; app.app_context().push(); db.create_all()"
@@ -76,7 +76,13 @@ docker-compose exec web python -c "from server.app import app; from database imp
 Для создания резервной копии базы данных:
 
 ```bash
-docker-compose exec db mysqldump -u pmuser -ppmpassword project_management > backup.sql
+docker-compose exec db pg_dump -U ${POSTGRES_USER} -d ${POSTGRES_DB} > backup.sql
+```
+
+Для восстановления из резервной копии:
+
+```bash
+cat backup.sql | docker-compose exec -T db psql -U ${POSTGRES_USER} -d ${POSTGRES_DB}
 ```
 
 ## Мониторинг логов
