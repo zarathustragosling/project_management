@@ -3,7 +3,6 @@ from flask_login import login_required
 from functools import wraps
 
 class BaseView(MethodView):
-    """Базовый класс для всех представлений"""
     
     decorators = []
     
