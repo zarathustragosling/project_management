@@ -1,7 +1,7 @@
 from flask import abort, redirect, url_for, flash
 from flask_login import current_user
 from functools import wraps
-from database import db, Project, Task, Team, User
+from server.database import db, Project, Task, Team, User
 
 
 

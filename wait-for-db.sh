@@ -2,6 +2,11 @@
 
 set -e
 
+echo "POSTGRES_USER=$POSTGRES_USER"
+echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
+echo "POSTGRES_DB=$POSTGRES_DB"
+echo "HOST: $1, PORT: $2"
+
 host="$1"
 shift
 port="$1"

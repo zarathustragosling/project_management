@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, current_user
-from database import User, db
+from server.database import User, db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Создаем Blueprint для аутентификации

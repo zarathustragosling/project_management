@@ -1,6 +1,6 @@
 from flask import request, redirect, url_for, flash, abort
 from flask_login import current_user
-from database import db, Project, Task, Team, User
+from server.database import db, Project, Task, Team, User
 import re
 
 def init_middleware(app):

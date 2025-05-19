@@ -23,3 +23,31 @@ README.md
 *.swp
 *.swo
 .DS_Store
+
+# Исключение больших и ненужных директорий
+**/__pycache__/
+**/node_modules/
+**/.pytest_cache/
+**/.coverage
+**/.tox/
+**/.idea/
+**/.vscode/
+
+# Исключение архивов и бинарных файлов
+*.tar
+*.gz
+*.zip
+*.rar
+*.7z
+*.pdf
+*.doc*
+*.xls*
+*.ppt*
+
+# Исключение временных файлов сборки
+build/
+dist/
+*.egg-info/
+
+# Исключение больших исходных файлов
+server/Python-*

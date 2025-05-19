@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from flask_login import login_required, login_user, logout_user, current_user
-from database import db, User, Team, Role, Project, Task, Comment, CommentType, TaskStatus
+from server.database import db, User, Team, Role, Project, Task, Comment, CommentType, TaskStatus
 from werkzeug.utils import secure_filename
 import os
-from utils.access_control import team_access_required, team_admin_required
+from server.utils.access_control import team_access_required, team_admin_required
 
 # Создаем Blueprint для маршрутов пользователей
 user_bp = Blueprint('user', __name__, url_prefix='/user')

@@ -3,9 +3,17 @@ FROM python:3.9-slim
 # Установка системных зависимостей, включая клиент PostgreSQL
 RUN apt-get update && apt-get install -y \
     postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
+    libpango-1.0-0 \
+    libharfbuzz0b \
+    libpangoft2-1.0-0 \
+    libharfbuzz-subset0 \
+    libffi-dev \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/* \
+    && echo 'export PATH="/usr/lib/postgresql/*/bin:$PATH"' >> /etc/bash.bashrc
 
 WORKDIR /app
+ENV PYTHONPATH=/app
 
 # Установка зависимостей Python
 COPY requirements.txt .
@@ -13,6 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Копирование файлов проекта
 COPY . .
+
 
 # Создание директорий для загрузок и отчетов, если их нет
 RUN mkdir -p static/uploads static/reports static/avatars

@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash
 from flask_login import current_user, login_required
-from database import db, User, Project, Task, TaskStatus, Comment, CommentType, Team
+from server.database import db, User, Project, Task, TaskStatus, Comment, CommentType, Team
 from datetime import datetime, date, timedelta
-from utils.access_control import team_access_required, team_admin_required
-from handlers.notification_handler import NotificationService
+from server.utils.access_control import team_access_required, team_admin_required
+from server.handlers.notification_handler import NotificationService
 
 # Создаем Blueprint для маршрутов задач
 task_bp = Blueprint('task', __name__, url_prefix='/task')

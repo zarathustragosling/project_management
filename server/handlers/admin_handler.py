@@ -2,7 +2,7 @@ from flask import redirect, url_for, request
 from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user
-from database import db, User, Team, Project, Task, Comment, Role, Report, CommentAttachment, Notification, TaskStatus, CommentType, NotificationType
+from server.database import db, User, Team, Project, Task, Comment, Role, Report, CommentAttachment, Notification, TaskStatus, CommentType, NotificationType
 from wtforms import PasswordField, SelectField, validators
 import enum
 

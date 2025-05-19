@@ -1,6 +1,6 @@
 from flask import Blueprint, url_for
 from markupsafe import Markup, escape
-from database import User
+from server.database import User
 import re
 
 # Создаем Blueprint для утилит

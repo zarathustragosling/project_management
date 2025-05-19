@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
 from flask_login import current_user
-from database import db, User, Comment, Task, CommentType, CommentAttachment
+from server.database import db, User, Comment, Task, CommentType, CommentAttachment
 from werkzeug.utils import secure_filename
 import os, re
 from markupsafe import escape
 from flask.views import MethodView
-from utils.base_view import BaseView, LoginRequiredMixin
+from server.utils.base_view import BaseView, LoginRequiredMixin
 
 # Создаем Blueprint для маршрутов комментариев
 comment_bp = Blueprint('comment', __name__, url_prefix='/comment')

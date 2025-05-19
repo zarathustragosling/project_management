@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, jsonify, request
 from flask_login import current_user, login_required
-from database import db, Notification, User, Team, Task, NotificationType
+from server.database import db, Notification, User, Team, Task, NotificationType
 from datetime import datetime, timedelta
 
 # Создаем Blueprint для маршрутов уведомлений

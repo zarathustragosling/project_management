@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, jsonify
 from flask_login import current_user, login_required
-from database import db, User, Team, Role, Project
+from server.database import db, User, Team, Role, Project
 import os, secrets
 from werkzeug.utils import secure_filename
-from utils.access_control import team_access_required, team_admin_required
-from handlers.notification_handler import NotificationService
+from server.utils.access_control import team_access_required, team_admin_required
+from server.handlers.notification_handler import NotificationService
 
 # Создаем Blueprint для маршрутов команд
 team_bp = Blueprint('team', __name__, url_prefix='/team')

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_from_directory, abort, jsonify, make_response
 from flask_login import current_user, login_required
-from database import db, User, Project, Report, Team, Task, TaskStatus
-from utils.access_control import team_access_required
+from server.database import db, User, Project, Report, Team, Task, TaskStatus
+from server.utils.access_control import team_access_required
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime, timedelta

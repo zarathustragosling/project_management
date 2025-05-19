@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import current_user, login_required
-from database import db, User, Project, Task, Report, Team
+from server.database import db, User, Project, Task, Report, Team
 from datetime import datetime
 from functools import wraps
-from utils.access_control import team_access_required, team_admin_required
+from server.utils.access_control import team_access_required, team_admin_required
 
 # Создаем Blueprint для маршрутов проектов
 project_bp = Blueprint('project', __name__, url_prefix='/project')

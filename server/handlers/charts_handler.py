@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, jsonify, redirect, url_for
 from flask_login import current_user
-from database import db, Project, Task
+from server.database import db, Project, Task
 
 # Создаем Blueprint для маршрутов диаграмм
 charts_bp = Blueprint('charts', __name__, url_prefix='/charts')
